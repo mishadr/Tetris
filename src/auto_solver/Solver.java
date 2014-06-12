@@ -1,7 +1,10 @@
 package auto_solver;
 
 import game_engine.Field;
+import game_engine.figures.AbstractFigure;
 import game_engine.figures.Figure;
+import game_engine.figures.FigureType;
+import game_engine.figures.FiguresBuilder;
 import game_engine.figures.FiguresManager;
 
 import java.io.FileInputStream;
@@ -13,27 +16,30 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
-import user_control.GameParameters;
+import user_control.GameMode;
 
 public class Solver {
 
 	private final Field fieldInit;
-	private List<Figure> figuresList;
+	private List<AbstractFigure> figuresList;
 	
 	private List<Field> fieldsList;
+	private boolean reflectionsAllowed;
 
-	public Solver(GameParameters params)
+	public Solver(GameMode params)
 	{
 		fieldInit = new Field(params.getWidth(), params.getHeight());
-
+//		FiguresManager.fillBottomLinesRandomly(fieldInit, fieldInit.getHeight()-10, 0.9);
+		reflectionsAllowed = params.isReflectionsAllowed();
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static List<Figure> loadFiguresFromFile(String fileName) {
+	public static List<AbstractFigure> loadFiguresFromFile(String fileName) {
 		try (ObjectInputStream os = new ObjectInputStream(new FileInputStream(
 				fileName))) {
-			return (List<Figure>) os.readObject();
+			return (List<AbstractFigure>) os.readObject();
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (ClassNotFoundException e) {
@@ -46,11 +52,18 @@ public class Solver {
 		figuresList = loadFiguresFromFile(fileName);
 	}
 	
-	void generateFigures(GameParameters params, int size) {
+	void generateFigures(GameMode params, int size) {
+		List<AbstractFigure> list = new LinkedList<>();
+		Map<FigureType, List<AbstractFigure>> allFigures = FiguresBuilder.getAllFigures();
+		for (FigureType type : params.getIncludedTypes()) {
+			list.addAll(allFigures.get(type));
+		}
+		AbstractFigure[] allowed = list.toArray(new AbstractFigure[list.size()]);
+
 		figuresList = new ArrayList<>(size);
 		for (int i = 0; i < size; ++i) {
-			figuresList.add(FiguresManager.generateOne(params
-					.getIncludedTypes()));
+			figuresList.add(FiguresManager.generateOne(allowed));
+			// TODO refactor using AbstractFigures
 		}
 	}
 
@@ -70,11 +83,12 @@ public class Solver {
 		int iter = 0;
 		Field field = fieldInit.clone();
 		fieldsList = new ArrayList<>();
-		for(Figure figure: figuresList)
+		for(AbstractFigure af: figuresList)
 		{
 			//System.out.println("iteration: " + iter++);
-			FiguresManager.put(figure, field);
 			fieldsList.add(field.clone());
+			Figure figure = new Figure(af);
+			FiguresManager.put(figure, field);
 			field = playFigure(figure, field, model);
 			if(field == null)
 				break;
@@ -117,45 +131,56 @@ public class Solver {
 			return variants;
 		
 		// simple case when we firstly rotate then move figure
-		for(int mood = 0; mood<4; ++mood)
+		for(int orientation=0; orientation<2; ++orientation)
 		{
-			// move left until possible
-			int dx = 0;
-			for(;;dx--)
+			for(int mood = 0; mood<4; ++mood)
 			{
-				ok = FiguresManager.move(figure, field, -1, 0);
+				// move left until possible
+				int dx = 0;
+				for(;;dx--)
+				{
+					ok = FiguresManager.move(figure, field, -1, 0);
+					if(!ok)
+						break;
+					Figure newFigure = figure.clone();
+					for (; FiguresManager.move(newFigure, field, 0, 1);) {
+						/* full down */
+					}
+					Field newField = field.clone();
+					FiguresManager.embed(newFigure, newField);
+					variants.add(newField);
+				}
+				// move back
+				FiguresManager.move(figure, field, -dx-1, 0);
+				// move right until possible
+				dx = 0;
+				for(;;dx++)
+				{
+					ok = FiguresManager.move(figure, field, 1, 0);
+					if(!ok)
+						break;
+					Figure newFigure = figure.clone();
+					for (; FiguresManager.move(newFigure, field, 0, 1);) {
+						/* full down */
+					}
+					Field newField = field.clone();
+					FiguresManager.embed(newFigure, newField);
+					variants.add(newField);
+				}
+				// move back
+				FiguresManager.move(figure, field, -dx, 0);
+				// next mood
+				ok = FiguresManager.rotate(figure, field);
 				if(!ok)
 					break;
-				Figure newFigure = figure.clone();
-				for (; FiguresManager.move(newFigure, field, 0, 1);) {
-					/* full down */
-				}
-				Field newField = field.clone();
-				FiguresManager.embed(newFigure, newField);
-				variants.add(newField);
 			}
-			// move back
-			FiguresManager.move(figure, field, -dx-1, 0);
-			// move right until possible
-			dx = 0;
-			for(;;dx++)
+			if(reflectionsAllowed)
 			{
-				ok = FiguresManager.move(figure, field, 1, 0);
+				ok = FiguresManager.reflectVertical(figure, field);
 				if(!ok)
 					break;
-				Figure newFigure = figure.clone();
-				for (; FiguresManager.move(newFigure, field, 0, 1);) {
-					/* full down */
-				}
-				Field newField = field.clone();
-				FiguresManager.embed(newFigure, newField);
-				variants.add(newField);
 			}
-			// move back
-			FiguresManager.move(figure, field, -dx, 0);
-			// next mood
-			ok = FiguresManager.rotate(figure, field);
-			if(!ok)
+			else
 				break;
 		}
 		

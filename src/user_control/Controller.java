@@ -1,5 +1,6 @@
 package user_control;
 
+import game_engine.GameManager;
 import game_engine.Game.Action;
 
 import java.awt.Component;
@@ -14,35 +15,38 @@ public class Controller {
 
 	private static boolean lock;
 
+	private static Action actionX;
+	private static Action actionY;
+	private static Action actionZ;
+	private static Timer timerX;
+	private static Timer timerY;
+	private static Timer timerZ;
+
 	public static void setListeners(Component component,
 			final GameManager manager) {
 		lock = true;
+		timerX = new Timer(90, new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				manager.performAction(actionX);
+			}
+		});
+		timerY = new Timer(50, new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				manager.performAction(actionY);
+			}
+		});
+		timerZ = new Timer(400, new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				manager.performAction(actionZ);
+			}
+		});
 		component.addKeyListener(new KeyListener() {
-
-			private Action actionX;
-			private Action actionY;
-			private Action actionZ;
-			private Timer timerX = new Timer(80, new ActionListener() {
-
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					manager.performAction(actionX);
-				}
-			});
-			private Timer timerY = new Timer(50, new ActionListener() {
-
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					manager.performAction(actionY);
-				}
-			});
-			private Timer timerZ = new Timer(400, new ActionListener() {
-
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					manager.performAction(actionZ);
-				}
-			});
 
 			public void keyTyped(KeyEvent e) {
 			}
@@ -98,10 +102,17 @@ public class Controller {
 					if (press) {
 						manager.performAction(Action.VERTICAL_REFLECT);
 					}
+					return Action.VERTICAL_REFLECT;
 				case KeyEvent.VK_SPACE:
 					if (press) {
 						manager.performAction(Action.FULL_DOWN);
 					}
+					return Action.FULL_DOWN;
+				case KeyEvent.VK_P:
+					if (press) {
+						manager.pauseGame();
+					}
+					return null;
 				default:
 					return null;
 				}
@@ -112,6 +123,9 @@ public class Controller {
 
 	public static void lock() {
 		lock = true;
+		timerX.stop();
+		timerY.stop();
+		timerZ.stop();
 	}
 
 	public static void unlock() {

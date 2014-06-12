@@ -9,16 +9,15 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 
-import user_control.GameParameters;
 import user_control.MainDialog;
 
 public class GameResult {
 
 	static final String path = "results.gr";
 
-	public static void saveResults(Gameplay gameplay, GameParameters params)
+	public static void saveResults(Game game, GameParameters params)
 			throws IOException {
-		double result = gameplay.getScore();
+		double result = game.getScore();
 		File file = new File(MainDialog.gameDir, path);
 		if (file.createNewFile()) {
 			save(file, result);

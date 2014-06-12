@@ -1,6 +1,12 @@
 package user_control;
 
 
+import game_engine.DrawerPanel;
+import game_engine.GameManager;
+import game_engine.GameParameters;
+import game_engine.GameStyle;
+import game_engine.Level;
+
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -13,25 +19,34 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 import javax.swing.JButton;
-import javax.swing.JDialog;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JRadioButton;
 import javax.swing.JSeparator;
 import javax.swing.border.EmptyBorder;
+import javax.swing.ButtonGroup;
 
 
-public class MainDialog extends JDialog {
+
+public class MainDialog extends JFrame {
 
 	private static final long serialVersionUID = 2384296700714804348L;
-	public static final File gameDir = new File("D:/Games/Tetris/");
+	public static final File gameDir = new File("D:/Games/Tetris");
+	public static final String title = "Tetris v.3 : ";
+	
 	private final DrawerPanel drawerPanel;
 	private final GameManager manager;
+	private Level level;
+	private GameStyle gameStyle;
 	private JLabel speedLabel;
 	private JLabel linesLabel;
 	private JLabel figuresLabel;
 	private JLabel scoreLabel;
+	private final ButtonGroup levelButtonGroup = new ButtonGroup();
+	private final ButtonGroup gameStyleButtonGroup = new ButtonGroup();
 
 	/**
 	 * Launch the application.
@@ -52,7 +67,7 @@ public class MainDialog extends JDialog {
 	 */
 	public MainDialog() {
 		setBounds(400, 120, 400, 346);
-		setTitle("Tetris v.1");
+		setResizable(false);
 //		setUndecorated(true);
 //		setOpacity(0.8f);
 //		setUndecorated(false);
@@ -69,7 +84,11 @@ public class MainDialog extends JDialog {
 		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0};
 		getContentPane().setLayout(gridBagLayout);
 		
-		manager = new GameManager();
+		level = Level.DEFAULT;
+		gameStyle = GameStyle.CLASSIC;
+		setTitle(title + level + " " + gameStyle);
+
+		manager = new GameManager(level, gameStyle);
 		drawerPanel = new DrawerPanel(this);
 		drawerPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 		GridBagConstraints gbc_drawerPanel = new GridBagConstraints();
@@ -165,13 +184,13 @@ public class MainDialog extends JDialog {
 			JMenuBar menuBar = new JMenuBar();
 			setJMenuBar(menuBar);
 			{
-				JMenu mnGame = new JMenu("Game");
+				JMenu mnGame = new JMenu("This game");
 				menuBar.add(mnGame);
 				{
-					JMenuItem mntmBeginNew = new JMenuItem("Begin new");
+					JMenuItem mntmBeginNew = new JMenuItem("Restart");
 					mntmBeginNew.addActionListener(new ActionListener() {
 						public void actionPerformed(ActionEvent e) {
-							manager.beginNewGame();
+							manager.restart();
 						}
 					});
 					mnGame.add(mntmBeginNew);
@@ -210,80 +229,152 @@ public class MainDialog extends JDialog {
 				}
 			}
 			{
-				JMenu mnParameters = new JMenu("New game");
+				JMenu mnParameters = new JMenu("Level");
 				menuBar.add(mnParameters);
 				{
-					JMenuItem mntmChange = new JMenuItem("Custom parameters...");
-					mntmChange.addActionListener(new ActionListener() {
+					JRadioButton mntmEasy = new JRadioButton("Easy");
+					levelButtonGroup.add(mntmEasy);
+					mntmEasy.addActionListener(new ActionListener() {
 						public void actionPerformed(ActionEvent e) {
-							changeParameters();
-//							manager.beginNewGame();
+							level = Level.EASY;
 						}
 					});
 					{
-						JMenuItem mntmSimpleSet = new JMenuItem("Simple set");
-						mntmSimpleSet.addActionListener(new ActionListener() {
+						JRadioButton mntmDeafault = new JRadioButton("Default");
+						levelButtonGroup.add(mntmDeafault);
+						levelButtonGroup.setSelected(mntmDeafault.getModel(), true);
+						mntmDeafault.addActionListener(new ActionListener() {
 							public void actionPerformed(ActionEvent e) {
-								manager.setParams(GameParameters.simple());
-								manager.beginNewGame();
+								level = Level.DEFAULT;
 							}
 						});
-						{
-							JMenuItem mntmDeafaultSet = new JMenuItem("Default set");
-							mntmDeafaultSet.addActionListener(new ActionListener() {
-								public void actionPerformed(ActionEvent e) {
-									manager.setParams(GameParameters.defaultParameters());
-									manager.beginNewGame();
-								}
-							});
-							mnParameters.add(mntmDeafaultSet);
+						mnParameters.add(mntmDeafault);
+					}
+					mnParameters.add(mntmEasy);
+				}
+				{
+					JRadioButton mntmMedium = new JRadioButton("Medium");
+					levelButtonGroup.add(mntmMedium);
+					mntmMedium.addActionListener(new ActionListener() {
+						public void actionPerformed(ActionEvent e) {
+							level = Level.MEDIUM;
 						}
-						mnParameters.add(mntmSimpleSet);
-					}
-					{
-						JMenuItem mntmMediumSet = new JMenuItem("Medium set");
-						mntmMediumSet.addActionListener(new ActionListener() {
-							public void actionPerformed(ActionEvent e) {
-								manager.setParams(GameParameters.medium());
-								manager.beginNewGame();
-							}
-						});
-						mnParameters.add(mntmMediumSet);
-					}
-					{
-						JMenuItem mntmLargeSet = new JMenuItem("Large set");
-						mntmLargeSet.addActionListener(new ActionListener() {
-							public void actionPerformed(ActionEvent e) {
-								manager.setParams(GameParameters.large());
-								manager.beginNewGame();
-							}
-						});
-						mnParameters.add(mntmLargeSet);
-					}
-					{
-						JMenuItem mntmFullSet = new JMenuItem("Full set");
-						mntmFullSet.addActionListener(new ActionListener() {
-							public void actionPerformed(ActionEvent e) {
-								manager.setParams(GameParameters.full());
-								manager.beginNewGame();
-							}
-						});
-						mnParameters.add(mntmFullSet);
-					}
-					{
-						JSeparator separator = new JSeparator();
-						mnParameters.add(separator);
-					}
-					mnParameters.add(mntmChange);
+					});
+					mnParameters.add(mntmMedium);
+				}
+				{
+					JRadioButton mntmHard = new JRadioButton("Hard");
+					levelButtonGroup.add(mntmHard);
+					mntmHard.addActionListener(new ActionListener() {
+						public void actionPerformed(ActionEvent e) {
+							level = Level.HARD;
+						}
+					});
+					mnParameters.add(mntmHard);
+				}
+				{
+					JRadioButton mntmMaster = new JRadioButton("Master");
+					levelButtonGroup.add(mntmMaster);
+					mntmMaster.addActionListener(new ActionListener() {
+						public void actionPerformed(ActionEvent e) {
+							level = Level.MASTER;
+						}
+					});
+					mnParameters.add(mntmMaster);
+				}
+				{
+					JRadioButton rdbtnFull = new JRadioButton("Full");
+					levelButtonGroup.add(rdbtnFull);
+					rdbtnFull.addActionListener(new ActionListener() {
+						public void actionPerformed(ActionEvent e) {
+							level = Level.FULL;
+						}
+					});
+					mnParameters.add(rdbtnFull);
+				}
+			}
+			{
+				JMenu mnGameStyle = new JMenu("Game style");
+				menuBar.add(mnGameStyle);
+				{
+					JRadioButton mntmClassic = new JRadioButton("Classic");
+					gameStyleButtonGroup.add(mntmClassic);
+					gameStyleButtonGroup.setSelected(mntmClassic.getModel(), true);
+					mntmClassic.addActionListener(new ActionListener() {
+						public void actionPerformed(ActionEvent e) {
+							gameStyle = GameStyle.CLASSIC;
+						}
+					});
+					mnGameStyle.add(mntmClassic);
+				}
+				{
+					JRadioButton mntmCyclicField = new JRadioButton("Cycled field");
+					gameStyleButtonGroup.add(mntmCyclicField);
+					mntmCyclicField.addActionListener(new ActionListener() {
+						public void actionPerformed(ActionEvent e) {
+							gameStyle = GameStyle.CYCLED_FIELD;
+						}
+					});
+					mnGameStyle.add(mntmCyclicField);
+				}
+				{
+					JRadioButton mntmBoxPacking = new JRadioButton("Box packing");
+					gameStyleButtonGroup.add(mntmBoxPacking);
+					mntmBoxPacking.addActionListener(new ActionListener() {
+						public void actionPerformed(ActionEvent e) {
+							gameStyle = GameStyle.BOX_PACKING;
+						}
+					});
+					mnGameStyle.add(mntmBoxPacking);
+				}
+				{
+					JRadioButton mntmGarbageDeleting = new JRadioButton("Garbage deleting");
+					gameStyleButtonGroup.add(mntmGarbageDeleting);
+					mntmGarbageDeleting.addActionListener(new ActionListener() {
+						public void actionPerformed(ActionEvent e) {
+							gameStyle = GameStyle.GARBAGE_DELETING;
+						}
+					});
+					mnGameStyle.add(mntmGarbageDeleting);
+					mntmGarbageDeleting.setEnabled(false);// XXX not implemented yet
+				}
+			}
+			{
+				JMenu mnNewGame = new JMenu("New game");
+				menuBar.add(mnNewGame);
+				{
+					JMenuItem mntmChosenLevel = new JMenuItem("Chosen level & style");
+					mntmChosenLevel.addActionListener(new ActionListener() {
+						public void actionPerformed(ActionEvent e) {
+							startNewGame();
+						}
+					});
+					mnNewGame.add(mntmChosenLevel);
+				}
+				{
+					JMenuItem mntmFullyCustomGame = new JMenuItem("Fully custom game...");
+					mntmFullyCustomGame.addActionListener(new ActionListener() {
+						public void actionPerformed(ActionEvent e) {
+							changeParameters();
+						}
+					});
+					mnNewGame.add(mntmFullyCustomGame);
 				}
 			}
 		}
-		manager.setUpLabels(speedLabel, linesLabel, figuresLabel, scoreLabel);
+		// TODO manager.beginNewGame(); in new_game.type menu
+		
+		manager.setupLabels(speedLabel, linesLabel, figuresLabel, scoreLabel);
 //		manager.beginNewGame();
 	}
 
-    protected void changeParameters() {
-    	new ParametersDialog(this, manager);
+    protected void startNewGame() {
+		manager.beginNewGame(level, gameStyle);
+		setTitle(title + level + " - " + gameStyle);
+	}
+
+	protected void changeParameters() {
+    	new ParametersDialog(this, manager, new GameParameters(level, gameStyle));
 	}
 
 	protected void processWindowEvent(WindowEvent e) {

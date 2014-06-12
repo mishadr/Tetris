@@ -1,6 +1,7 @@
 package auto_solver;
 
 import game_engine.Field;
+import game_engine.figures.FiguresManager;
 
 public class Model {
 
@@ -22,7 +23,7 @@ public class Model {
 	// height above hole, big massive (2-3) above hole is worse (than 1)
 	double heightAboveHoleCoeff;
 
-	// hole in an almost full line is worse then that in row with many holes
+	// hole in an almost full line is worse than that in row with many holes
 	double holesInRowCoeff;
 
 	// smooth relief
@@ -77,10 +78,11 @@ public class Model {
 		double result = 0;
 		result += potential(grid);
 		result += fullLine(grid);
+		// full lines deleted now
 		result += hole(grid);
 		result += fitting(grid);
-//		result += heightAboveHole(grid);
-//		result += holesInRow(grid);
+		result += heightAboveHole(grid);
+		result += holesInRow(grid);
 		result += relief(grid);
 		return result;
 	}
@@ -113,6 +115,7 @@ public class Model {
 			}
 			if (full) {
 				result += fullLineCoeff;
+				FiguresManager.pullDown(grid, j);// delete full line
 			}
 		}
 		return result;
@@ -250,7 +253,12 @@ public class Model {
 					break;
 				}
 			}
-			result -= reliefCoeff*Math.abs(j - leftHeight);
+			
+			int diff = Math.abs(j - leftHeight);
+			if(diff > 1)// do not fire 1 brick differences
+			{
+				result -= reliefCoeff*diff;
+			}
 			leftHeight = j;
 		}
 		return result;

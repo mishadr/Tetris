@@ -10,17 +10,24 @@ import game_engine.Field;
  */
 public class FiguresManager {
 
-	/**
-	 * Generate one {@link Figure} with one of given types.
-	 * 
-	 * @param types
-	 * @return
-	 */
-	public static Figure generateOne(FigureType[] types) {
-		FigureUnit[] values = FigureUnit.values(types);
-		return new Figure(values[(int) (values.length * Math.random())],
-				(int) (4 * Math.random()));
-	}
+
+
+//	/**
+//	 * Select subset of standard figures with specified {@link FigureType}s
+//	 * 
+//	 * @param allFigures all existing figures
+//	 * @param includedTypes allowed types
+//	 * @return
+//	 */
+//	public static AbstractFigure[] selectAllowedFigures(
+//			Map<FigureType, List<AbstractFigure>> allFigures, FigureType[] includedTypes) {
+//		List<AbstractFigure> list = new LinkedList<>();
+//		for (FigureType type : includedTypes) {
+//			list.addAll(allFigures.get(type));
+//		}
+//
+//		return list.toArray(new AbstractFigure[list.size()]);
+//	}
 
 	/**
 	 * Tries to put given {@link Figure} on the {@link Field}.
@@ -31,39 +38,40 @@ public class FiguresManager {
 	 */
 	public static boolean put(Figure figure, Field field) {
 		int dx = field.getWidth() / 2 - 1;
-		int[] center = figure.getCenter();
-		figure.updatePosition(dx + center[0], center[1]);
-		int x = figure.getPosition()[0] - figure.getCenter()[0];
-		int y = figure.getPosition()[1] - figure.getCenter()[1];
-		return checkFreeCells(field.getGrid(), figure.getBody(), x, y);
+		figure.updatePosition(-figure.getPosition()[0] + dx, -figure.getPosition()[1]);
+		return checkFreeCells(field.getGrid(), figure, 0, 0) > 0;
 	}
 
 	/**
 	 * Check if specified cells are free in the grid, using {@link Field#FREE}.
 	 * 
 	 * @param grid
-	 * @param cells
-	 * @param x
+	 * @param figure
+	 * @param dx
 	 *            x-displacement for cells
-	 * @param y
+	 * @param dy
 	 *            y-displacement for cells
-	 * @return
+	 * @return 1 if OK, 0 if figure intersects buisy area, -1 if figure comes
+	 *         out of field
 	 */
-	private static boolean checkFreeCells(int[][] grid, int[] cells, int x,
-			int y) {
+	private static int checkFreeCells(int[][] grid, Figure figure, int dx,
+			int dy) {
 		int w = grid.length;
 		int h = grid[0].length;
-		for (int i = 0; i < cells.length; i += 2) {
-			int cx = cells[i] + x;
-			int cy = cells[i + 1] + y;
+		int[] body = figure.getBody();
+		dx += figure.getPosition()[0];
+		dy += figure.getPosition()[1];
+		for (int i = 0; i < body.length; i += 2) {
+			int cx = body[i] + dx;
+			int cy = body[i + 1] + dy;
 			if (cx < 0 || cx >= w || cy < 0 || cy >= h) {
-				return false;
+				return -1;
 			}
-			if (grid[cx][cy] != Field.FREE) {
-				return false;
+			if (Field.isBuisy(grid[cx][cy])) {
+				return 0;
 			}
 		}
-		return true;
+		return 1;
 	}
 
 	/**
@@ -74,12 +82,10 @@ public class FiguresManager {
 	 */
 	public static boolean rotate(Figure figure, Field field) {
 		figure.nextMood();
-		int x = figure.getPosition()[0] - figure.getCenter()[0];
-		int y = figure.getPosition()[1] - figure.getCenter()[1];
-		boolean success = checkFreeCells(field.getGrid(), figure.getBody(), x, y);
+		boolean success = false;// = checkFreeCells(field.getGrid(), figure.getBody(), x, y);
 		// try to move down a bit
-		for (int dy = 0; dy < 2; ++dy) {
-			success = checkFreeCells(field.getGrid(), figure.getBody(), x, y + dy);
+		for (int dy = 0; dy <= 2; ++dy) {
+			success = checkFreeCells(field.getGrid(), figure, 0, dy) > 0;
 			if (success) {
 				move(figure, field, 0, dy);
 				break;
@@ -101,22 +107,44 @@ public class FiguresManager {
 	 * @return success
 	 */
 	public static boolean move(Figure figure, Field field, int dx, int dy) {
-
-		int x = figure.getPosition()[0] - figure.getCenter()[0] + dx;
-		int y = figure.getPosition()[1] - figure.getCenter()[1] + dy;
-		if (!checkFreeCells(field.getGrid(), figure.getBody(), x, y)) {
+		// penetrating figure
+		if (figure.isPenetrating()) {
+			int iter = 0;
+			int check;
+			while (true) {
+				++iter;
+				check = checkFreeCells(field.getGrid(), figure, iter * dx, iter * dy);
+				if(check == 1) {// OK
+					dx = iter * dx;
+					dy = iter * dy;
+					break;
+				}
+				if (check == -1) {
+					return false;
+				}
+			}
+		}
+		// common figure
+		else if (checkFreeCells(field.getGrid(), figure, dx, dy) <= 0) {
 			return false;
 		}
-		figure.updatePosition(figure.getPosition()[0] + dx,
-				figure.getPosition()[1] + dy);
+		figure.updatePosition(dx, dy);
 		return true;
 	}
 
 	public static void embed(Figure figure, Field field) {
 		int[] cells = figure.getCoordinates();
+//		int[] pos = figure.getPosition();
+//		int[] body = figure.getBody();
+//		int[] cells = new int[body.length];
+//		for (int i = 0; i < body.length;) {
+//			cells[i] = body[i++] + pos[0];
+//			cells[i] = body[i++] + pos[1];
+//		}
+
 		int[][] grid = field.getGrid();
 		for (int i = 0; i < cells.length;) {
-			grid[cells[i++]][cells[i++]] = Field.BUSY;
+			grid[cells[i++]][cells[i++]] = Field.EMBEDDED;
 		}
 	}
 
@@ -128,7 +156,7 @@ public class FiguresManager {
 		for (int j = h - 1; j >= 0;) {
 			boolean full = true;
 			for (int i = 0; i < w; ++i) {
-				if (grid[i][j] == Field.FREE) {
+				if (Field.isFree(grid[i][j])) {
 					full = false;
 					break;
 				}
@@ -143,7 +171,7 @@ public class FiguresManager {
 		return count;
 	}
 
-	private static void pullDown(int[][] grid, int h) {
+	public static void pullDown(int[][] grid, int h) {
 		for (int i = 0; i < grid.length; ++i) {
 			for (int j = h; j > 0;) {
 				grid[i][j] = grid[i][--j];
@@ -153,7 +181,72 @@ public class FiguresManager {
 	}
 
 	public static boolean reflectVertical(Figure figure, Field field) {
-		// TODO Auto-generated method stub
-		return false;
+		figure.reflectOY();
+		boolean success = checkFreeCells(field.getGrid(), figure, 0, 0) > 0;
+		// TODO try to move left-right a bit
+		if (!success) {
+			figure.reflectOY();
+		}
+		return success;
+	}
+
+	/**
+	 * Fill randomly last <i>count</i> lines in given field.
+	 * 
+	 * @param field
+	 * @param count
+	 * @param density probability for each cell to be filled
+	 */
+	public static void fillBottomLinesRandomly(Field field, int count,
+			double density) {
+		int[][] grid = field.getGrid();
+		int w = grid.length;
+		int h = grid[0].length;
+		for (int i = 0; i < w; ++i) {
+			// works if count < 0
+			for (int j = 0; j < count; ++j) {
+				if (Math.random() <= density) {
+					grid[i][h - j - 1] = Field.EMBEDDED;
+				}
+			}
+		}
+	}
+
+	/**
+	 * Move field by <i>dx</i>
+	 * 
+	 * @param dx
+	 */
+	public static void moveField(Field field, int dx) {
+		// XXX generalize!
+		dx = 1;
+		int[][] grid = field.getGrid();
+		int w = grid.length;
+		int[] temp = grid[w-1];
+		for(int i=w-1; i>0; --i) {
+			grid[i] = grid[i-1];
+		}
+		grid[0] = temp;
+	}
+
+	/**
+	 * Percent of completeness
+	 * 
+	 * @param field
+	 * @return
+	 */
+	public static double computeDensity(Field field) {
+		int[][] grid = field.getGrid();
+		int w = grid.length;
+		int h = grid[0].length;
+		int busy = 0;
+		for (int i = 0; i < w; ++i) {
+			for (int j = 0; j < h; ++j) {
+				if (Field.isBuisy(grid[i][j])) {
+					busy++;
+				}
+			}
+		}
+		return 1.0 * busy / w / h;
 	}
 }

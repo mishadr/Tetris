@@ -2,12 +2,33 @@ package game_engine;
 
 import java.util.Arrays;
 
+/**
+ * Representation of cells grid. 
+ * 
+ * @author misha
+ *
+ */
+
 public class Field {
 	private final int width;
 	private final int height;
 	private final int grid[][];
 	public static final int FREE = 0;
-	public static final int BUSY = 1;
+	public static final int EMBEDDED = 1;
+	
+	/**
+	 * Check if cell value says it is empty
+	 */
+	public static final boolean isFree(int cell) {
+		return cell == FREE;
+	}
+
+	/**
+	 * Check if cell value says it is not empty
+	 */
+	public static final boolean isBuisy(int cell) {
+		return cell != FREE;
+	}
 
 	public Field(int width, int height) {
 		this.width = width;
@@ -22,7 +43,6 @@ public class Field {
 		for (int i = 0; i < width; ++i) {
 			this.grid[i] = Arrays.copyOf(grid[i], height);
 		}
-
 	}
 
 	public int[][] getGrid() {

@@ -4,33 +4,45 @@ import io.SimpleIO;
 
 import java.util.Arrays;
 
-import user_control.GameParameters;
+import user_control.GameMode;
 
 
 public class Trainer {
 	
-	private final String trainingDirPath = "training/large/";
+	private final String trainingDirPath = "training/medium/";// TODO parameterize params!!!
+//	private final String testDirPath = "test/large/";
 	
 	public static void main(String[] args)
 	{
-		GameParameters params = GameParameters.large();
+		GameMode params = GameMode.medium();
 		
 		Solver solver = new Solver(params);
 //		solver.generateFigures(params, 1000);
-//		solver.saveFigures("large_figures1000.fg");
-		solver.loadFigures("large_figures1000.fg");
+//		solver.saveFigures("default_figures1000.fg");
+		solver.loadFigures("medium_figures1000.fg");
 		
-		
+		// TODO leave only fieldsd with min score as training sets
 //		new Trainer().prepareTrainingSets(100, 500, params);
 		
 		Model model = Model.defaultModel();
-//		Model trainedModel = new Trainer().trainByMutations(params, model);
+		Model trainedModel = new Trainer().trainByMutations(params, model);
 //		Model trainedModel = new Trainer().trainParametersSequently(params, new Model());
 //		Model trainedModel = new Trainer().trainGradientStep(params, model);
 //		Model trainedModel = new Trainer().trainByMonteCarlo(params, model);
-//		double score = solver.solve(trainedModel);
-//		double score = solver.solve(new Model(1.0, 33.695360448986236, 12.98661681273085, 5.638791255657701, 1.578122552461168, 1.781601263373758, 0.5112894823771317));
-		double score = solver.solve(new Model(1.0, 24.375249833402645, 15.638896104617158, 6.64950636292486, 1.2011615482452267, 1.967466752949057, 0.7));
+		double score = solver.solve(trainedModel);
+//		double score = solver.solve(new Model(1.9823714705500828, 56.569967701815045, 19.14941993497812, 7.842867791241197, 0.8990134561109907, 0.6704896633485788, 1.871878312294333));
+//		double score = solver.solve(new Model(1.0, 56.02348217361618, 40.343159928416924, 15.87594984885185, 0.2794635131700676, 1.535287255698715, 1.793529194516746));
+//		double score = solver.solve(new Model(2.885108217804605, 14.507160351360737, 37.19775248622448, 4.296797616085915, 1.6755190621652956, 1.9563546575155846, 0.48142405831659996));
+		/*
+		 * simple
+		 * 3.2315759232190984, 45.716604258145146, 33.89344504009362, 19.403121053696115, 2.0860880493301694, 2.986381664239646, 0.5043876990292371
+		 * medium
+		 * 1.9823714705500828, 56.569967701815045, 19.14941993497812, 7.842867791241197, 0.8990134561109907, 0.6704896633485788, 1.871878312294333
+		 * large
+		 * 1.5245045228283027, 2.6650851808486697, 11.220494209261634, 4.956567111990763, 0.3603691377321131, 0.9822241938175513, 1.0045757342949906
+		 * large with refl
+		 * 2.885108217804605, 14.507160351360737, 37.19775248622448, 4.296797616085915, 1.6755190621652956, 1.9563546575155846, 0.48142405831659996
+		 */
 		System.out.println("result: " + score);
 		solver.visualize();
 		
@@ -46,7 +58,7 @@ public class Trainer {
 	 * @param size size of each set
 	 * @param params
 	 */
-	void prepareTrainingSets(int count, int size, GameParameters params) {
+	void prepareTrainingSets(int count, int size, GameMode params) {
 		Solver solver = new Solver(params);
 		for (int i = 0; i < count; ++i) {
 			solver.generateFigures(params, size);
@@ -54,9 +66,11 @@ public class Trainer {
 		}
 	}
 	
-	private Model trainByMutations(GameParameters params, Model model)
+	// TODO search best on 1 step radius sphere
+	
+	private Model trainByMutations(GameMode params, Model model)
 	{
-		int count = 20;
+		int count = 100;
 		Solver[] solvers = new Solver[count];
 		for(int i=0; i<count; ++i)
 		{
@@ -64,11 +78,11 @@ public class Trainer {
 			solvers[i].loadFigures(trainingDirPath+"figures"+i+".fg");
 		}
 		
-		double bestScore = computeAvgScore(solvers, model);
-		for(int i=0; i<100; ++i)
+		double bestScore = computeMinScore(solvers, model);
+		for(int i=0; i<400; ++i)
 		{
 			Model mutatedModel = Model.mutate(model);
-			double newScore = computeAvgScore(solvers, mutatedModel);
+			double newScore = computeMinScore(solvers, mutatedModel);
 			if(newScore > bestScore)
 			{
 				bestScore = newScore;
@@ -85,7 +99,7 @@ public class Trainer {
 	}
 
 	
-	private Model trainParametersSequently(GameParameters params, Model model) {
+	private Model trainParametersSequently(GameMode params, Model model) {
 		
 		double[] parameters = model.getParameters();
 		int size = parameters.length;
@@ -113,7 +127,7 @@ public class Trainer {
 //	}
 
 
-	private Model trainByMonteCarlo(GameParameters params, Model model) {
+	private Model trainByMonteCarlo(GameMode params, Model model) {
 		int count = 10;
 		Solver[] solvers = new Solver[count];
 		for(int i=0; i<count; ++i)

@@ -3,7 +3,7 @@ package game_engine.figures;
 import java.io.Serializable;
 
 /**
- * {@link FigureUnit} and 2 coordinates on a grid.
+ * {@link AbstractFigure}, isPenetrating flag and 2 coordinates on a grid.
  * 
  * @author misha
  * 
@@ -11,64 +11,67 @@ import java.io.Serializable;
 public class Figure implements Serializable {
 	private static final long serialVersionUID = -1346582714893661925L;
 
-	private final FigureUnit unit;
-
+	private final AbstractFigure unit;
 	/**
-	 * 1 of possible moods (turn angle)
-	 */
-	private int mood;
-
-	/**
-	 * x & y position on the grid
+	 * x & y coordinates of the central point on the grid
 	 */
 	private int position[];
 
-	public Figure(FigureUnit unit, int mood) {
+	public Figure(AbstractFigure unit) {
 		this.unit = unit;
-		this.mood = mood;
 		position = new int[2];
 	}
 
+	/**
+	 * Get position of left-top of this figure
+	 * 
+	 * @return
+	 */
 	int[] getPosition() {
-		return position;
-	}
-
-	int[] getCenter() {
-		return unit.getCenter(mood);
+		return new int[] { position[0] - unit.getCenter()[0],
+				position[1] - unit.getCenter()[1] };
 	}
 
 	int[] getBody() {
-		return unit.getBody(mood);
+		return unit.getBody();
 	}
 
-	void updatePosition(int x, int y) {
-		position[0] = x;
-		position[1] = y;
+	void updatePosition(int dx, int dy) {
+		position[0] += dx;
+		position[1] += dy;
 	}
 
 	public int[] getCoordinates() {
-		int dx = position[0] - getCenter()[0];
-		int dy = position[1] - getCenter()[1];
+		int[] pos = getPosition();
 		int[] body = getBody();
 		int[] result = new int[body.length];
 		for (int i = 0; i < body.length;) {
-			result[i] = body[i++] + dx;
-			result[i] = body[i++] + dy;
+			result[i] = body[i++] + pos[0];
+			result[i] = body[i++] + pos[1];
 		}
 		return result;
 	}
-
+	
 	void nextMood() {
-		mood = (mood + 1) % 4;
+		unit.nextMood();
 	}
 
 	void prevMood() {
-		mood = (mood + 3) % 4;
+		unit.prevMood();
 	}
 
 	public Figure clone() {
-		Figure clone = new Figure(unit, mood);
-		clone.updatePosition(position[0], position[1]);
+		Figure clone = new Figure(unit.clone());
+		clone.position = position.clone();
 		return clone;
 	}
+
+	void reflectOY() {
+		unit.reflectOY();
+	}
+
+	public boolean isPenetrating() {
+		return unit.isPenetrating();
+	}
+
 }

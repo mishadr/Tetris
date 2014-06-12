@@ -1,7 +1,10 @@
 package auto_solver;
 
+import game_engine.DrawerPanel;
 import game_engine.Field;
+import game_engine.figures.AbstractFigure;
 import game_engine.figures.Figure;
+import game_engine.figures.FiguresManager;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -11,14 +14,13 @@ import javax.swing.JFrame;
 import javax.swing.Timer;
 import javax.swing.WindowConstants;
 
-import user_control.DrawerPanel;
 
 public class Visualizer {
 	private Timer timer;
 	private DrawerPanel drawer;
 	private int count;
 	private List<Field> fieldsList;
-	private List<Figure> figuresList;
+	private List<AbstractFigure> figuresList;
 
 	public Visualizer()
 	{
@@ -38,7 +40,7 @@ public class Visualizer {
 		
 	}
 
-	public void show(List<Field> fieldsList, List<Figure> figuresList) {
+	public void show(List<Field> fieldsList, List<AbstractFigure> figuresList) {
 		this.fieldsList = fieldsList;
 		this.figuresList = figuresList;
 		timer.start();
@@ -53,7 +55,8 @@ public class Visualizer {
 			return;
 		}
 		Field field = fieldsList.get(count);
-		Figure figure = figuresList.get(count);
+		Figure figure = new Figure(figuresList.get(count));
+		FiguresManager.put(figure, field);
 		drawer.fieldAndFigureToDraw(field, figure);
 		drawer.repaint();
 		count++;
