@@ -1,10 +1,8 @@
 package auto_solver;
 
+import game_engine.AbstractField;
 import game_engine.DrawerPanel;
-import game_engine.Field;
 import game_engine.figures.AbstractFigure;
-import game_engine.figures.Figure;
-import game_engine.figures.FiguresManager;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -14,50 +12,58 @@ import javax.swing.JFrame;
 import javax.swing.Timer;
 import javax.swing.WindowConstants;
 
-
+/**
+ * Visualizer of game playing by solver.
+ * 
+ * @author misha
+ * 
+ */
 public class Visualizer {
 	private Timer timer;
 	private DrawerPanel drawer;
 	private int count;
-	private List<Field> fieldsList;
-	private List<AbstractFigure> figuresList;
+	private List<AbstractField> fieldsArray;
+	private List<AbstractFigure> figuresSequence;
 
-	public Visualizer()
-	{
-		JFrame frame = new JFrame("Solver training");
+	public Visualizer(int timerDelay) {
+		JFrame frame = new JFrame("Solver playing");
 		frame.setVisible(true);
 		frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 		drawer = new DrawerPanel(frame);
 		frame.getContentPane().add(drawer);
-		
-		timer = new Timer(800, new ActionListener() {
-			
+
+		timer = new Timer(timerDelay, new ActionListener() {
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				visualize();
 			}
 		});
-		
+
 	}
 
-	public void show(List<Field> fieldsList, List<AbstractFigure> figuresList) {
-		this.fieldsList = fieldsList;
-		this.figuresList = figuresList;
+	public void show(List<AbstractField> fieldsList, List<AbstractFigure> figuresList) {
+		this.fieldsArray = fieldsList;
+		this.figuresSequence = figuresList;
 		timer.start();
 		count = 0;
 	}
-	
-	
+
+	/**
+	 * Visualizes one step of solver: current figure in a field before figure is
+	 * embedded.
+	 * 
+	 */
 	protected void visualize() {
-		if(count == fieldsList.size())
-		{
+		if (count == fieldsArray.size()) {
 			timer.stop();
 			return;
 		}
-		Field field = fieldsList.get(count);
-		Figure figure = new Figure(figuresList.get(count));
-		FiguresManager.put(figure, field);
-		drawer.fieldAndFigureToDraw(field, figure);
+		AbstractField field = fieldsArray.get(count);
+		AbstractFigure figure = figuresSequence.get(count);
+		figure.put(field);
+		drawer.figureToDraw(figure);
+		drawer.fieldToDraw(field);
 		drawer.repaint();
 		count++;
 	}

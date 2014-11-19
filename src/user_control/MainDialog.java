@@ -39,6 +39,7 @@ public class MainDialog extends JFrame {
 	
 	private final DrawerPanel drawerPanel;
 	private final GameManager manager;
+	private final JButton pauseButton;
 	private Level level;
 	private GameStyle gameStyle;
 	private JLabel speedLabel;
@@ -102,7 +103,7 @@ public class MainDialog extends JFrame {
 		Controller.setListeners(drawerPanel, manager);
 		drawerPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 		{
-			JButton pauseButton = new JButton("PAUSE");
+			pauseButton = new JButton("PAUSE");
 			GridBagConstraints gbc_pauseButton = new GridBagConstraints();
 			gbc_pauseButton.insets = new Insets(5, 10, 5, 10);
 			gbc_pauseButton.gridx = 1;
@@ -231,112 +232,38 @@ public class MainDialog extends JFrame {
 			{
 				JMenu mnParameters = new JMenu("Level");
 				menuBar.add(mnParameters);
-				{
-					JRadioButton mntmEasy = new JRadioButton("Easy");
-					levelButtonGroup.add(mntmEasy);
-					mntmEasy.addActionListener(new ActionListener() {
-						public void actionPerformed(ActionEvent e) {
-							level = Level.EASY;
-						}
-					});
-					{
-						JRadioButton mntmDeafault = new JRadioButton("Default");
-						levelButtonGroup.add(mntmDeafault);
-						levelButtonGroup.setSelected(mntmDeafault.getModel(), true);
-						mntmDeafault.addActionListener(new ActionListener() {
-							public void actionPerformed(ActionEvent e) {
-								level = Level.DEFAULT;
-							}
-						});
-						mnParameters.add(mntmDeafault);
+				// add levels
+				for (final Level item : Level.values()) {
+					JRadioButton rButton = new JRadioButton(item.name().toLowerCase());
+					levelButtonGroup.add(rButton);
+					if(item.equals(level)) {
+						levelButtonGroup.setSelected(rButton.getModel(), true);
 					}
-					mnParameters.add(mntmEasy);
-				}
-				{
-					JRadioButton mntmMedium = new JRadioButton("Medium");
-					levelButtonGroup.add(mntmMedium);
-					mntmMedium.addActionListener(new ActionListener() {
+					rButton.addActionListener(new ActionListener() {
 						public void actionPerformed(ActionEvent e) {
-							level = Level.MEDIUM;
+							level = item;
 						}
 					});
-					mnParameters.add(mntmMedium);
-				}
-				{
-					JRadioButton mntmHard = new JRadioButton("Hard");
-					levelButtonGroup.add(mntmHard);
-					mntmHard.addActionListener(new ActionListener() {
-						public void actionPerformed(ActionEvent e) {
-							level = Level.HARD;
-						}
-					});
-					mnParameters.add(mntmHard);
-				}
-				{
-					JRadioButton mntmMaster = new JRadioButton("Master");
-					levelButtonGroup.add(mntmMaster);
-					mntmMaster.addActionListener(new ActionListener() {
-						public void actionPerformed(ActionEvent e) {
-							level = Level.MASTER;
-						}
-					});
-					mnParameters.add(mntmMaster);
-				}
-				{
-					JRadioButton rdbtnFull = new JRadioButton("Full");
-					levelButtonGroup.add(rdbtnFull);
-					rdbtnFull.addActionListener(new ActionListener() {
-						public void actionPerformed(ActionEvent e) {
-							level = Level.FULL;
-						}
-					});
-					mnParameters.add(rdbtnFull);
+					mnParameters.add(rButton);
 				}
 			}
 			{
 				JMenu mnGameStyle = new JMenu("Game style");
 				menuBar.add(mnGameStyle);
-				{
-					JRadioButton mntmClassic = new JRadioButton("Classic");
-					gameStyleButtonGroup.add(mntmClassic);
-					gameStyleButtonGroup.setSelected(mntmClassic.getModel(), true);
-					mntmClassic.addActionListener(new ActionListener() {
+				// add game styles
+				for (final GameStyle item : GameStyle.values()) {
+					JRadioButton rButton = new JRadioButton(item.name()
+							.toLowerCase().replace('_', ' '));
+					gameStyleButtonGroup.add(rButton);
+					if(item.equals(gameStyle)) {
+						gameStyleButtonGroup.setSelected(rButton.getModel(), true);
+					}
+					rButton.addActionListener(new ActionListener() {
 						public void actionPerformed(ActionEvent e) {
-							gameStyle = GameStyle.CLASSIC;
+							gameStyle = item;
 						}
 					});
-					mnGameStyle.add(mntmClassic);
-				}
-				{
-					JRadioButton mntmCyclicField = new JRadioButton("Cycled field");
-					gameStyleButtonGroup.add(mntmCyclicField);
-					mntmCyclicField.addActionListener(new ActionListener() {
-						public void actionPerformed(ActionEvent e) {
-							gameStyle = GameStyle.CYCLED_FIELD;
-						}
-					});
-					mnGameStyle.add(mntmCyclicField);
-				}
-				{
-					JRadioButton mntmBoxPacking = new JRadioButton("Box packing");
-					gameStyleButtonGroup.add(mntmBoxPacking);
-					mntmBoxPacking.addActionListener(new ActionListener() {
-						public void actionPerformed(ActionEvent e) {
-							gameStyle = GameStyle.BOX_PACKING;
-						}
-					});
-					mnGameStyle.add(mntmBoxPacking);
-				}
-				{
-					JRadioButton mntmGarbageDeleting = new JRadioButton("Garbage deleting");
-					gameStyleButtonGroup.add(mntmGarbageDeleting);
-					mntmGarbageDeleting.addActionListener(new ActionListener() {
-						public void actionPerformed(ActionEvent e) {
-							gameStyle = GameStyle.GARBAGE_DELETING;
-						}
-					});
-					mnGameStyle.add(mntmGarbageDeleting);
-					mntmGarbageDeleting.setEnabled(false);// XXX not implemented yet
+					mnGameStyle.add(rButton);
 				}
 			}
 			{
@@ -369,6 +296,7 @@ public class MainDialog extends JFrame {
 	}
 
     protected void startNewGame() {
+    	pauseButton.setEnabled(level.isPauseAllowed());
 		manager.beginNewGame(level, gameStyle);
 		setTitle(title + level + " - " + gameStyle);
 	}

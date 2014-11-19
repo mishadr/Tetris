@@ -3,7 +3,7 @@ package game_engine.scoring;
 import java.text.NumberFormat;
 
 import game_engine.Field;
-import game_engine.figures.FiguresManager;
+import game_engine.figures.FieldManager;
 
 /**
  * Scoring in packing box game.
@@ -31,7 +31,7 @@ public class PackingScoring extends AbstractScoringStrategy {
 	@Override
 	public double countScore(int figuresCount, int linesCount, int speed,
 			Field field) {
-		double score = FiguresManager.computeDensity(field);
+		double score = FieldManager.computeDensity(field);
 		NumberFormat f = NumberFormat.getInstance();
 		f.setMaximumFractionDigits(4);
 		// FIXME bad solution

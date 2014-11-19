@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Utility that randomly chooses {@link AbstractFigure}s among allowed ones and
+ * Utility that randomly chooses {@link AbstractSkeleton}s among allowed ones and
  * gives them one by one. Choosing method is specified in subclass.
  * 
  * @author misha
@@ -12,7 +12,7 @@ import java.util.Map;
  */
 public abstract class AbstractFiguresChooser {
 
-	protected static final Map<FigureType, List<AbstractFigure>> allFigures = FiguresBuilder
+	protected static final Map<FigureType, List<AbstractFigure>> allFigures = SkeletonsBuilder
 			.getAllFigures();
 
 //	protected AbstractFiguresChooser(FigureType[] figureTypes) {
@@ -20,11 +20,10 @@ public abstract class AbstractFiguresChooser {
 //	}
 
 	/**
-	 * Generate one {@link AbstractFigure} in random mood according to the
+	 * Generate one {@link AbstractSkeleton} in random mood according to the
 	 * strategy.
 	 * 
-	 * @param types
-	 * @return
+	 * @return ready to use AbstractFigure (cloned)
 	 */
 	public abstract AbstractFigure next();
 

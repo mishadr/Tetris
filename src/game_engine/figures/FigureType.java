@@ -30,9 +30,25 @@ public enum FigureType {
 	SEMIWHOLE_3,
 	SEPARATE_2_2,
 	SEPARATE_2_3,
+	SEPARATE_2_4,
+	SEPARATE_2_5,
+	
+	SEPARATE_3_2,
 	SEPARATE_3_3,
+	SEPARATE_3_4,
+	SEPARATE_3_5,
+	
+	SEPARATE_4_2,
+	SEPARATE_4_3,
+	SEPARATE_4_4,
+	SEPARATE_4_5,
+	
+	SEPARATE_5_2,
+	SEPARATE_5_3,
+	SEPARATE_5_4,
+	SEPARATE_5_5,
 //	SEPARATE_3,
 //	SEPARATE_4, 
 	;
-	public static final int WHOLE_MAX_BRICKS = 9;
+	public static final int WHOLE_MAX_BRICKS = 8;
 }

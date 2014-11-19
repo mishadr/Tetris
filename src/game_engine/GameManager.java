@@ -1,14 +1,17 @@
 package game_engine;
 
 import game_engine.Game.Action;
+import game_engine.figures.AbstractFigure;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.List;
 
 import javax.swing.JLabel;
 import javax.swing.Timer;
 
 import user_control.Controller;
+import auto_solver.Solver;
 
 /**
  * Manager of game process. It can start, stop, pause, finish, save the current
@@ -22,11 +25,11 @@ import user_control.Controller;
  */
 public class GameManager {
 
-	private GameParameters params;
-	private Game currentGame;
+	GameParameters params;
+	Game currentGame;
 	private boolean isPlaying;
 	
-	private DrawerPanel drawer;
+	DrawerPanel drawer;
 	private Timer gameTimer;
 	private Timer drawerTimer;
 
@@ -45,7 +48,7 @@ public class GameManager {
 //		gameplay = new Gameplay(timer, params);
 	}
 
-//	List<AbstractFigure> figures = Solver.loadFiguresFromFile("medium_figures1000.fg");
+//	List<AbstractFigure> figures = Solver.loadFiguresFromFile("test/MEDIUM, CLASSIC/figures0.fs");
 	int i = 0;
 	private void initTimers() {
 		gameTimer = new Timer(10000, new ActionListener() {
@@ -63,7 +66,7 @@ public class GameManager {
 						currentGame.moveField(1);
 					}
 					if(params.isFadeWhenFigureFinished()) {
-						drawer.timeStep(currentGame.getFieldGrid());
+						drawer.tickTime(currentGame.getField());
 					}
 					if (!currentGame.prepareNewFigure(/*figures.get(i++)*/)) {
 						finishGame();
@@ -78,14 +81,14 @@ public class GameManager {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if(!params.isFadeWhenFigureFinished()) {
-					drawer.timeStep(currentGame.getFieldGrid());
+					drawer.tickTime(currentGame.getField());
 					drawer.repaint();
 				}
 			}
 		});
 	}
 
-	private void repaint() {
+	void repaint() {
 		speedLabel.setText("" + currentGame.getSpeed());
 		linesLabel.setText("" + currentGame.getLinesCount());
 		figuresLabel.setText("" + currentGame.getFiguresCount());
@@ -117,19 +120,19 @@ public class GameManager {
 	/**
 	 * New game with custom {@link GameParameters}
 	 */
-	public void beginNewGame(GameParameters params) {
+	public void beginNewGame(GameParameters newParams) {
 		gameTimer.stop();
 		drawerTimer.stop();
-		this.params = params;
-		drawer.setFadingIterations(params.isFadeWhenFigureFinished() ? params
+		this.params = newParams;
+		drawer.setFadingIterations(newParams.isFadeWhenFigureFinished() ? newParams
 				.getFadingIterationsCount() : 256);
-		currentGame = new Game(gameTimer, params);
+		currentGame = new Game(gameTimer, newParams);
 		isPlaying = true;
 		
 		if (!currentGame.prepareNewFigure(/* figures.get(i++) */)) {
 			System.err.println("error at start");
 		}
-		drawer.fieldToDraw(currentGame.getFieldGrid());
+		drawer.fieldToDraw(currentGame.getField());
 		drawer.figureToDraw(currentGame.getFigure());
 		repaint();
 		Controller.unlock();
@@ -164,6 +167,9 @@ public class GameManager {
 	}
 
 	public void pauseGame() {
+		if(!params.isPauseAllowed()) {
+			return;
+		}
 		if (!isPlaying) {
 			return;
 		}

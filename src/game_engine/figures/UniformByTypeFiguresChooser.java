@@ -25,7 +25,7 @@ public class UniformByTypeFiguresChooser extends AbstractFiguresChooser {
 		for (int i = 0; i < mood; ++i) {
 			figure.nextMood();
 		}
-		return figure;
+		return figure.clone();
 	}
 
 }

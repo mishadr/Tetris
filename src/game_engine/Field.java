@@ -1,21 +1,25 @@
 package game_engine;
 
+import game_engine.figures.AbstractFigure;
+
 import java.util.Arrays;
 
+import auto_solver.Model;
+
 /**
- * Representation of cells grid. 
+ * Field for common playing with 4 possible bytes of information per cell.
+ * Efficiency is not important.
  * 
  * @author misha
- *
+ * 
  */
-
-public class Field {
-	private final int width;
-	private final int height;
-	private final int grid[][];
+public class Field extends AbstractField {
 	public static final int FREE = 0;
+	public static final int LABEL = -1;
 	public static final int EMBEDDED = 1;
-	
+
+	private final int grid[][];
+
 	/**
 	 * Check if cell value says it is empty
 	 */
@@ -31,15 +35,12 @@ public class Field {
 	}
 
 	public Field(int width, int height) {
-		this.width = width;
-		this.height = height;
+		super(width, height);
 		grid = new int[width][height];
 	}
 
 	private Field(int width, int height, int[][] grid) {
-		this.width = width;
-		this.height = height;
-		this.grid = new int[width][height];
+		this(width, height);
 		for (int i = 0; i < width; ++i) {
 			this.grid[i] = Arrays.copyOf(grid[i], height);
 		}
@@ -49,15 +50,22 @@ public class Field {
 		return grid;
 	}
 
-	public int getWidth() {
-		return width;
-	}
-
-	public int getHeight() {
-		return height;
-	}
-
 	public Field clone() {
 		return new Field(width, height, grid);
+	}
+
+	@Override
+	public String toString() {
+		return "Field [grid=" + Arrays.deepToString(grid) + "]";
+	}
+
+	@Override
+	public int checkFreeCells(AbstractFigure figure, int dx, int dy) {
+		return figure.checkFreeCells(this, dx, dy);
+	}
+
+	@Override
+	public double evaluate(Model model) {
+		return model.evaluate(this);
 	}
 }

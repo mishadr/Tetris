@@ -4,7 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * Chooses random figure among the whole set.
+ * Chooses random figure uniformly among the whole set, it was initialized with.
  * 
  * @author misha
  * 
@@ -29,6 +29,6 @@ public class UniformByItemFiguresChooser extends AbstractFiguresChooser {
 		for (int i = 0; i < mood; ++i) {
 			figure.nextMood();
 		}
-		return figure;
+		return figure.clone();
 	}
 }

@@ -1,181 +1,193 @@
 package game_engine.figures;
 
+import game_engine.AbstractField;
+import game_engine.FastField;
+import game_engine.Field;
 
 /**
- * Figure with the only body (which rotates as a whole object).
+ * OneBodyFigure consisting of one skeleton. It is a {@link Skeleton},
+ * isPenetrating flag and 2 coordinates on a grid.
  * 
  * @author misha
- *
+ * 
  */
 public class OneBodyFigure extends AbstractFigure {
-	private static final long serialVersionUID = 6454266355326437162L;
+	private static final long serialVersionUID = -1346582714893661925L;
 
+	protected final Skeleton unit;
+	protected boolean isPenetrating;
 	/**
-	 * coordinates (x, y) of displacements of center in default mood.
+	 * x & y coordinates of the left top
 	 */
-	protected final int center[];
+	protected int position[];
 
-	/**
-	 * array of pairs (x, y) of body coordinates in default mood. They are
-	 * always >= 0.
-	 */
-	protected final int body[];
-
-	protected OneBodyFigure(boolean isPenetrating, int[] body) {
-		this(isPenetrating, body, new int[] { 0, 0 });
+	public OneBodyFigure(Skeleton unit, boolean isPenetrating) {
+		this.unit = unit;
+		this.isPenetrating = isPenetrating;
+		position = new int[2];
 	}
 
-//	protected AbstractFigure(int size, int... body) {
-//		this(Arrays.copyOfRange(body, 0, 2 * size),
-//				body.length > 2 * size ? Arrays.copyOfRange(body, 2 * size,
-//						body.length - 2 * size) : new int[] { 0, 0 });
-//	}
-
-	protected OneBodyFigure(boolean isPenetrating, int[] body, int[] center) {
-		super(isPenetrating);
-		this.center = center;
-		this.body = body;
-//		this.center = new int[4][2];
-//		this.body = new int[4][body.length];
-//		if (center.length == 8) {
-//			buildMoods(
-//					body,
-//					new int[][] { Arrays.copyOfRange(center, 0, 2),
-//							Arrays.copyOfRange(center, 2, 4),
-//							Arrays.copyOfRange(center, 4, 6),
-//							Arrays.copyOfRange(center, 6, 8) });
-//		} else {
-//			int[] centerReversed = new int[]{center[1], center[0]};
-//			buildMoods(body, new int[][] { center, centerReversed, center, centerReversed });
-//		}
-	}
-
-//	private void buildMoods(int[] body, int[][] centers) {
-//		for (int i = 0; i < 4; ++i) {
-//			this.center[i] = centers[i];
-//			this.body[i] = body;
-//			body = FiguresBuilder.rotate(body);
-//		}
-//	}
-
-	int[] getCenter() {
-		return center;
-	}
-
-//	public int[] getPosition() {
-//		return new int[]{position[0] - unit.getCenter()[0], 
-//				position[1] - unit.getCenter()[1]};
-//	}
-	
-	@Override
-	int[] getBody() {
-		return body;
-	}
-
-	@Override
-	void nextMood() {
-		int length = body.length;
-		int[] temp = new int[length];
-		int ymax = 0;
-		for (int i = 1; i < length; i += 2) {
-			if (body[i] > ymax) {
-				ymax = body[i];
-			}
-		}
-		for (int i = 0; i < length;) {
-			int x = body[i];
-			temp[i] = ymax - body[++i];
-			temp[i++] = x;
-		}
-		System.arraycopy(temp, 0, body, 0, length);
-		int t = center[1];
-		center[1] = center[0];
-		center[0] = t;
-	}
-	
-	@Override
-	void prevMood() {
-		int length = body.length;
-		int[] temp = new int[length];
-		int xmax = 0;
-		for (int i = 0; i < length; i += 2) {
-			if (body[i] > xmax) {
-				xmax = body[i];
-			}
-		}
-		for (int i = 0; i < length;) {
-			int x = body[i];
-			temp[i] = body[++i];
-			temp[i++] = xmax - x;
-		}
-		System.arraycopy(temp, 0, body, 0, length);
-		int t = center[1];
-		center[1] = center[0];
-		center[0] = t;
-	}
-	
-	@Override
-	void reflectOY() {
-		int length = body.length;
-		int xmax = 0;
-		for (int i = 0; i < length; i += 2) {
-			if (body[i] > xmax) {
-				xmax = body[i];
-			}
-		}
-		for (int i = 0; i < length; i+=2) {
-			body[i] = xmax - body[i];
-		}
-//		center[0] = xmax+1 - center[0];
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		int[] body = ((OneBodyFigure) obj).body;
-		if (this.body.length != body.length)
-			return false;
-		// sets of pairs (x, y) in 2bodies must be compared
+	public int[] getCoordinates() {
+		int[] body = unit.getBody();
+		int[] result = new int[body.length];
 		for (int i = 0; i < body.length;) {
-			if (!FiguresBuilder.containsBlock(this.body, body[i++], body[i++]))
-				return false;
+			result[i] = body[i++] + position[0];
+			result[i] = body[i++] + position[1];
 		}
+		return result;
+	}
+
+	public OneBodyFigure clone() {
+		OneBodyFigure clone = new OneBodyFigure(unit.clone(), isPenetrating);
+		clone.position = position.clone();
+		return clone;
+	}
+	
+	//===============================================================================
+	
+	@Override
+	public boolean put(AbstractField field) {
+		int dx = field.getWidth() / 2 - 1;
+		position[0] = dx;
+		position[1] = 0;
+		return field.checkFreeCells(this, 0, 0) > 0;
+	}
+
+	@Override
+	public boolean rotate(AbstractField field) {
+		unit.nextMood();
+		boolean success = false;// = checkFreeCells(field.getGrid(), figure.getBody(), x, y);
+		// try to move down a bit
+		for (int dy = 0; dy <= 2; ++dy) {
+			success = field.checkFreeCells(this, 0, dy) > 0;
+			if (success) {
+				move(field, 0, dy);
+				break;
+			}
+		}
+		if (!success) {
+			unit.prevMood();
+		}
+		return success;
+	}
+
+	@Override
+	public boolean move(AbstractField field, int dx, int dy) {
+		// XXX penetrating figure
+		if (isPenetrating) {
+			int iter = 0;
+			int check;
+			while (true) {
+				++iter;
+				check = field.checkFreeCells(this, iter * dx, iter * dy);
+				if(check == 1) {// OK
+					dx = iter * dx;
+					dy = iter * dy;
+					break;
+				}
+				if (check == -1) {
+					return false;
+				}
+			}
+		}
+		// common figure
+		else if (field.checkFreeCells(this, dx, dy) <= 0) {
+			return false;
+		}
+		position[0] += dx;
+		position[1] += dy;
 		return true;
 	}
 
 	@Override
-	public OneBodyFigure clone() {
-		return cloneAs(isPenetrating);
+	public void embed(AbstractField field) {
+		int[] cells = getCoordinates();
+
+		if (field instanceof FastField) {
+			boolean[] grid = ((FastField) field).getGrid();
+			int w = ((FastField) field).getWidth();
+			int h = ((FastField) field).getHeight();
+			for (int i = 0; i < cells.length;) {
+				grid[cells[i++] * h + cells[i++]] = true;
+			}
+		} else {
+			int[][] grid = ((Field) field).getGrid();
+			for (int i = 0; i < cells.length;) {
+				grid[cells[i++]][cells[i++]] = Field.EMBEDDED;
+			}
+		}
 	}
 
 	@Override
-	OneBodyFigure cloneAs(boolean isPenetrating) {
-		OneBodyFigure clone = new OneBodyFigure(isPenetrating, body.clone(),
-				center.clone());
-		return clone;
+	public boolean reflectVertical(AbstractField field) {
+		unit.reflectOY();
+		boolean success = field.checkFreeCells(this, 0, 0) > 0;
+		// TODO try to move left-right a bit
+		if (!success) {
+			unit.reflectOY();
+		}
+		return success;
 	}
 
-//	public static int[] rotate(int[] body) {
-//		int[] res = new int[body.length];
-//		int ymax = 0;
-//		for (int i = 1; i < body.length; i += 2) {
-//			if (body[i] > ymax) {
-//				ymax = body[i];
-//			}
+//	@Override
+//	protected int checkFreeCells(AbstractField field, int dx, int dy) {
+//		if (field instanceof FastField) {
+//			return checkFreeCells((FastField) field, dx, dy);
 //		}
-//		for (int i = 0; i < body.length;) {
-//			int x = body[i];
-//			res[i] = ymax - body[++i];
-//			res[i++] = x;
-//		}
-//		return res;
+//		return checkFreeCells((Field) field, dx, dy);
 //	}
-	
-	
+
+	@Override
+	public int checkFreeCells(Field field, int dx,
+			int dy) {
+		int[][] grid = field.getGrid();
+		int w = grid.length;
+		int h = grid[0].length;
+		int[] body = unit.getBody();
+		dx += position[0];
+		dy += position[1];
+		for (int i = 0; i < body.length; i += 2) {
+			int cx = body[i] + dx;
+			int cy = body[i + 1] + dy;
+			if (cx < 0 || cx >= w || cy < 0 || cy >= h) {
+				return -1;
+			}
+			if (Field.isBuisy(grid[cx][cy])) {
+				return 0;
+			}
+		}
+		return 1;
+	}
+
+	@Override
+	public int checkFreeCells(FastField field, int dx, int dy) {
+		boolean[] grid = field.getGrid();
+		int w = field.getWidth();
+		int h = field.getHeight();
+		int[] body = unit.getBody();
+		dx += position[0];
+		dy += position[1];
+		for (int i = 0; i < body.length; i += 2) {
+			int cx = body[i] + dx;
+			int cy = body[i + 1] + dy;
+			if (cx < 0 || cx >= w || cy < 0 || cy >= h) {
+				return -1;
+			}
+			if (grid[cx * h + cy]) {
+				return 0;
+			}
+		}
+		return 1;
+	}
+
+	@Override
+	public boolean isPenetrating() {
+		return isPenetrating;
+	}
+
+	@Override
+	public void nextMood() {
+		unit.nextMood();
+	}
 
 }

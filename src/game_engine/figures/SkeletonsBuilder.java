@@ -15,10 +15,12 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.TreeMap;
 
 import javax.swing.JFrame;
@@ -29,12 +31,12 @@ import javax.swing.WindowConstants;
 import user_control.MainDialog;
 
 /**
- * Simple utility for generating figures.
+ * Simple utility for generating skeletons of figures.
  * 
  * @author misha
  *
  */
-public class FiguresBuilder extends JPanel {
+public class SkeletonsBuilder extends JPanel {
 	private static final long serialVersionUID = 3627390607519465519L;
 	private final int fieldSize = 10;
 	private final int cellSize = 30;
@@ -43,7 +45,7 @@ public class FiguresBuilder extends JPanel {
 	
 	public static final String pathToFiguresFile = MainDialog.gameDir + "/" + "data/allowed_figures.fg";
 
-	public FiguresBuilder() {
+	public SkeletonsBuilder() {
 		JFrame frame = new JFrame("Builder");
 		frame.setSize(fieldSize * cellSize + 20, fieldSize * cellSize + 40);
 		frame.setLocation(400, 300);
@@ -124,16 +126,16 @@ public class FiguresBuilder extends JPanel {
 
 	public static void main(String[] args) {
 
-		// new FiguresBuilder();
-		getAllFigures();
+		// new SkeletonsBuilder();
+		generateSkeletons();
 	}
 
 	/**
-	 * Load all possible figures from file or generate and save them.
+	 * Load all possible skeletons from file or generate and save them.
 	 * 
 	 * @return
 	 */
-	public static Map<FigureType, List<AbstractFigure>> getAllFigures() {
+	public static Map<FigureType, List<Skeleton>> generateSkeletons() {
 		File file = new File(pathToFiguresFile);
 		if (file.exists()) {
 			System.out.println("File with figures exists.");
@@ -141,11 +143,8 @@ public class FiguresBuilder extends JPanel {
 			try (ObjectInputStream is = new ObjectInputStream(
 					new FileInputStream(file))) {
 				@SuppressWarnings("unchecked")
-				Map<FigureType, List<AbstractFigure>> type2list = (Map<FigureType, List<AbstractFigure>>) is
+				Map<FigureType, List<Skeleton>> type2list = (Map<FigureType, List<Skeleton>>) is
 						.readObject();
-				
-				addPenetratingFigures(type2list);
-				addSeparateFigures(type2list);
 				
 				// TODO add TBF
 				return type2list;
@@ -166,7 +165,7 @@ public class FiguresBuilder extends JPanel {
 			}
 		}
 	
-		Map<FigureType, List<AbstractFigure>> type2list = generateFigures();
+		Map<FigureType, List<Skeleton>> type2list = generateFigures();
 	
 		// save generated figures
 		try (ObjectOutputStream os = new ObjectOutputStream(
@@ -174,9 +173,6 @@ public class FiguresBuilder extends JPanel {
 			os.writeObject(type2list);
 			System.out.println("figures saved to " + file.getAbsolutePath());
 			
-			// TODO repeating!
-			addPenetratingFigures(type2list);
-			addSeparateFigures(type2list);
 		} catch (IOException e) {
 			e.printStackTrace();
 			file.delete();
@@ -184,62 +180,116 @@ public class FiguresBuilder extends JPanel {
 		
 		return type2list;
 	}
+	
+	/**
+	 * Get all possible figures.
+	 * 
+	 * @return
+	 */
+	public static Map<FigureType, List<AbstractFigure>> getAllFigures() {
+		
+		Map<FigureType, List<Skeleton>> type2list = generateSkeletons();
+		
+		// complete set with figures built on Skeletons
+		Map<FigureType, List<AbstractFigure>> res = new HashMap<>();
+		
+		res.putAll(buildSeparateFigures(type2list));
+		res.putAll(buildFiguresFromSkeletons(type2list));
+		
+		return res;
+	}
 
-	private static void addPenetratingFigures(
-			Map<FigureType, List<AbstractFigure>> type2list) {
-		// whole
-		for (int i = 1; i <= FigureType.WHOLE_MAX_BRICKS; ++i) {
-			List<AbstractFigure> whole = type2list.get(FigureType
-					.valueOf("WHOLE_" + i));
-			List<AbstractFigure> penetrating = new ArrayList<>(whole.size());
-			for (AbstractFigure af : whole) {
-				penetrating.add(af.cloneAs(true));
+
+	private static Map<FigureType, List<AbstractFigure>> buildFiguresFromSkeletons(
+			Map<FigureType, List<Skeleton>> type2list) {
+		Map<FigureType, List<AbstractFigure>> res = new HashMap<>();
+		Iterator<Entry<FigureType, List<Skeleton>>> iter = type2list.entrySet()
+				.iterator();
+		while (iter.hasNext()) {
+			Entry<FigureType, List<Skeleton>> entry = iter.next();
+			List<AbstractFigure> figures = new ArrayList<>(entry.getValue().size());
+			List<AbstractFigure> penFigures = new ArrayList<>(entry.getValue().size());
+			for (Skeleton s : entry.getValue()) {
+				figures.add(new OneBodyFigure(s, false));
+				penFigures.add(new OneBodyFigure(s, true));
 			}
-			type2list.put(FigureType.valueOf("PENETRATING_WHOLE_" + i),
-					penetrating);
+			FigureType type = entry.getKey();
+			res.put(type, figures);
+			// TODO separate figures with 1 penetrating part
+			// add penetrating version
+			FigureType penetratingType = FigureType.valueOf("PENETRATING_" + type.toString());
+			res.put(penetratingType, penFigures);
 		}
+		return res;
+	}
+
+//	private static Map<FigureType, List<OneBodyFigure>> buildPenetratingFigures(
+//			Map<FigureType, List<Skeleton>> type2list) {
+//		Map<FigureType, List<OneBodyFigure>> res = new HashMap<>();
+//		// whole
+//		for (int i = 1; i <= FigureType.WHOLE_MAX_BRICKS; ++i) {
+//			List<Skeleton> whole = type2list.get(FigureType
+//					.valueOf("WHOLE_" + i));
+//			List<Skeleton> penetrating = new ArrayList<>(whole.size());
+//			for (Skeleton af : whole) {
+//				penetrating.add(af.cloneAs(true));
+//			}
+//			res.put(new FigureFigureType.valueOf("PENETRATING_WHOLE_" + i),
+//					penetrating);
+//		}
+//	
+//		// semiwhole 2-3
+//		List<Skeleton> semiwhole2 = type2list.get(FigureType.SEMIWHOLE_2);
+//		List<Skeleton> penetratingSemi2 = new ArrayList<>(semiwhole2.size());
+//		for(Skeleton af: semiwhole2) {
+//			penetratingSemi2.add(af.cloneAs(true));
+//		}
+//		type2list.put(FigureType.PENETRATING_SEMIWHOLE_2, penetratingSemi2);
+//	
+//		List<Skeleton> semiwhole3 = type2list.get(FigureType.SEMIWHOLE_3);
+//		List<Skeleton> penetratingSemi3 = new ArrayList<>(semiwhole3.size());
+//		for(Skeleton af: semiwhole3) {
+//			penetratingSemi3.add(af.cloneAs(true));
+//		}
+//		type2list.put(FigureType.PENETRATING_SEMIWHOLE_3, penetratingSemi3);
+//	
+//	}
 	
-		// semiwhole 2-3
-		List<AbstractFigure> semiwhole2 = type2list.get(FigureType.SEMIWHOLE_2);
-		List<AbstractFigure> penetratingSemi2 = new ArrayList<>(semiwhole2.size());
-		for(AbstractFigure af: semiwhole2) {
-			penetratingSemi2.add(af.cloneAs(true));
+	// not penetrating yet!
+	private static Map<FigureType, List<AbstractFigure>> buildSeparateFigures(
+			Map<FigureType, List<Skeleton>> type2list) {
+		Map<FigureType, List<AbstractFigure>> res = new HashMap<>();
+		int n = 5;
+		for(int i=2; i<=n; ++i) {
+			for(int j=2; j<=n; ++j) {
+				res.put(FigureType.valueOf("SEPARATE_"+i+"_"+j), buildSeparateFigures(
+						type2list.get(FigureType.valueOf("WHOLE_"+i)), 
+						type2list.get(FigureType.valueOf("WHOLE_"+j)), Math.max(i, j)+1, 0));
+			}
 		}
-		type2list.put(FigureType.PENETRATING_SEMIWHOLE_2, penetratingSemi2);
-	
-		List<AbstractFigure> semiwhole3 = type2list.get(FigureType.SEMIWHOLE_3);
-		List<AbstractFigure> penetratingSemi3 = new ArrayList<>(semiwhole3.size());
-		for(AbstractFigure af: semiwhole3) {
-			penetratingSemi3.add(af.cloneAs(true));
-		}
-		type2list.put(FigureType.PENETRATING_SEMIWHOLE_3, penetratingSemi3);
-	
+		return res;
 	}
 	
-	private static void addSeparateFigures(
-			Map<FigureType, List<AbstractFigure>> type2list) {
-		
-		type2list.put(FigureType.SEPARATE_2_2, buildSeparateFigures(
-				type2list.get(FigureType.WHOLE_2), type2list.get(FigureType.WHOLE_2), 3, 0));
-		
-		type2list.put(FigureType.SEPARATE_2_3, buildSeparateFigures(
-				type2list.get(FigureType.WHOLE_2), type2list.get(FigureType.WHOLE_3), 4, 0));
-	}
+	// TODO let all figures share more bodies and FiguresChooser just clone them
 
 	private static List<AbstractFigure> buildSeparateFigures(
-			List<AbstractFigure> list1, List<AbstractFigure> list2, int dx, int dy) {
+			List<Skeleton> list1, List<Skeleton> list2, int dx, int dy) {
 		List<TwoBodiesFigure> candidates = new LinkedList<>();
 		// bruit force method
-		for (AbstractFigure item1 : list1) {
-			for (AbstractFigure item2 : list2) {
-				AbstractFigure rot = item2.clone();
-				candidates.add(new TwoBodiesFigure(false, item1.clone(), rot.clone(), dx, dy));
+		for (Skeleton item1 : list1) {
+			for (Skeleton item2 : list2) {
+				OneBodyFigure rot = new OneBodyFigure(item2.clone(), false);
+				candidates.add(new TwoBodiesFigure(new OneBodyFigure(item1
+						.clone(), false), rot.clone(), dx, dy));
 				rot.nextMood();
-				candidates.add(new TwoBodiesFigure(false, item1.clone(), rot.clone(), dx, dy));
+				candidates.add(new TwoBodiesFigure(new OneBodyFigure(item1
+						.clone(), false), rot.clone(), dx, dy));
 				rot.nextMood();
-				candidates.add(new TwoBodiesFigure(false, item1.clone(), rot.clone(), dx, dy));
+				candidates.add(new TwoBodiesFigure(new OneBodyFigure(item1
+						.clone(), false), rot.clone(), dx, dy));
 				rot.nextMood();
-				candidates.add(new TwoBodiesFigure(false, item1.clone(), rot.clone(), dx, dy));
+				candidates.add(new TwoBodiesFigure(new OneBodyFigure(item1
+						.clone(), false), rot.clone(), dx, dy));
 			}
 		}
 		
@@ -250,6 +300,7 @@ public class FiguresBuilder extends JPanel {
 			// check if rotated current figure coincides with any older one
 			for(int mood = 0; ; ++mood)
 			{
+				// XXX check comparing for Figures
 				if (result.contains(candidate)) {
 					continue lbl;
 				}
@@ -267,31 +318,29 @@ public class FiguresBuilder extends JPanel {
 		return result;
 	}
 
-	private static Map<FigureType, List<AbstractFigure>> generateFigures() {
-		Map<FigureType, List<AbstractFigure>> type2list = new TreeMap<>();
+	private static Map<FigureType, List<Skeleton>> generateFigures() {
+		Map<FigureType, List<Skeleton>> type2list = new TreeMap<>();
 	
-		List<AbstractFigure> semiwhole2 = new LinkedList<>();
-		semiwhole2.add(new OneBodyFigure(false, new int[] { 0, 0, 2, 0}, 
+		List<Skeleton> semiwhole2 = new LinkedList<>();
+		semiwhole2.add(new Skeleton(new int[] { 0, 0, 2, 0}));
+		semiwhole2.add(new Skeleton(new int[] { 0, 1, 2, 0}));
+		semiwhole2.add(new Skeleton(new int[] { 0, 0, 2, 1}, 
 				new int[] { 1, 0 }));
-		semiwhole2.add(new OneBodyFigure(false, new int[] { 0, 1, 2, 0}, 
-				new int[] { 1, 0 }));
-		semiwhole2.add(new OneBodyFigure(false, new int[] { 0, 0, 2, 1}, 
-				new int[] { 1, 0 }));
-		semiwhole2.add(new OneBodyFigure(false, new int[] { 0, 0, 1, 1}));
+		semiwhole2.add(new Skeleton(new int[] { 0, 0, 1, 1}));
 		type2list.put(FigureType.SEMIWHOLE_2, semiwhole2);
 		
-		List<AbstractFigure> semiwhole3 = new LinkedList<>();
-		semiwhole3.add(new OneBodyFigure(false, new int[] { 0, 0, 1, 1, 2, 0}));
-		semiwhole3.add(new OneBodyFigure(false, new int[] { 0, 0, 1, 1, 2, 1}));
-		semiwhole3.add(new OneBodyFigure(false, new int[] { 0, 0, 2, 0, 2, 1}));
-		semiwhole3.add(new OneBodyFigure(false, new int[] { 0, 0, 0, 1, 2, 0}));
-		semiwhole3.add(new OneBodyFigure(false, new int[] { 0, 0, 1, 2, 2, 0}));
-		semiwhole3.add(new OneBodyFigure(false, new int[] { 0, 0, 2, 0, 2, 2}));
-		semiwhole3.add(new OneBodyFigure(false, new int[] { 0, 1, 1, 0, 2, 0}));
-		semiwhole3.add(new OneBodyFigure(false, new int[] { 0, 0, 2, 1, 2, 2}));
-		semiwhole3.add(new OneBodyFigure(false, new int[] { 0, 0, 1, 0, 2, 2}));
-		semiwhole3.add(new OneBodyFigure(false, new int[] { 0, 0, 1, 2, 2, 1}));
-		semiwhole3.add(new OneBodyFigure(false, new int[] { 0, 0, 1, 1, 2, 2}));
+		List<Skeleton> semiwhole3 = new LinkedList<>();
+		semiwhole3.add(new Skeleton(new int[] { 0, 0, 1, 1, 2, 0}));
+		semiwhole3.add(new Skeleton(new int[] { 0, 0, 1, 1, 2, 1}));
+		semiwhole3.add(new Skeleton(new int[] { 0, 0, 2, 0, 2, 1}));
+		semiwhole3.add(new Skeleton(new int[] { 0, 0, 0, 1, 2, 0}));
+		semiwhole3.add(new Skeleton(new int[] { 0, 0, 1, 2, 2, 0}));
+		semiwhole3.add(new Skeleton(new int[] { 0, 0, 2, 0, 2, 2}));
+		semiwhole3.add(new Skeleton(new int[] { 0, 1, 1, 0, 2, 0}));
+		semiwhole3.add(new Skeleton(new int[] { 0, 0, 2, 1, 2, 2}));
+		semiwhole3.add(new Skeleton(new int[] { 0, 0, 1, 0, 2, 2}));
+		semiwhole3.add(new Skeleton(new int[] { 0, 0, 1, 2, 2, 1}));
+		semiwhole3.add(new Skeleton(new int[] { 0, 0, 1, 1, 2, 2}));
 		type2list.put(FigureType.SEMIWHOLE_3, semiwhole3);
 		
 		type2list.putAll(buildWholeFigures());
@@ -302,7 +351,7 @@ public class FiguresBuilder extends JPanel {
 	 * Iteratively build whole figures of up to size 9.
 	 * 
 	 */
-	private static Map<FigureType, List<AbstractFigure>> buildWholeFigures() {
+	private static Map<FigureType, List<Skeleton>> buildWholeFigures() {
 		JFrame frame = new JFrame("Generating figures...");
 		frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 		frame.setResizable(false);
@@ -317,10 +366,10 @@ public class FiguresBuilder extends JPanel {
 		progressBar.setStringPainted(true);
 		progressBar.setValue(1);
 		
-		Map<FigureType, List<AbstractFigure>> type2list = new TreeMap<>();
+		Map<FigureType, List<Skeleton>> type2list = new TreeMap<>();
 		
-		OneBodyFigure whole1 = new OneBodyFigure(false, new int[]{0, 0});
-		List<AbstractFigure> grown = new LinkedList<>();
+		Skeleton whole1 = new Skeleton(new int[]{0, 0});
+		List<Skeleton> grown = new LinkedList<>();
 		grown.add(whole1.clone());
 		type2list.put(FigureType.WHOLE_1, grown);
 		type2list.put(FigureType.WHOLE_2, grown = growWholeFigures(grown));//1
@@ -354,13 +403,13 @@ public class FiguresBuilder extends JPanel {
 	 * @param figuresList
 	 * @return
 	 */
-	private static List<AbstractFigure> growWholeFigures(
-			List<AbstractFigure> figuresList) {
-		List<AbstractFigure> result = new LinkedList<>();
-		for(AbstractFigure figure: figuresList)
+	private static List<Skeleton> growWholeFigures(
+			List<Skeleton> figuresList) {
+		List<Skeleton> result = new LinkedList<>();
+		for(Skeleton figure: figuresList)
 		{
-			List<AbstractFigure> candidates = getGrownWhole(figure);
-			lbl:for(AbstractFigure candidate: candidates)
+			List<Skeleton> candidates = getGrownWhole(figure);
+			lbl:for(Skeleton candidate: candidates)
 			{
 				// check if rotated current figure coincides with any older one
 				for(int mood = 0; ; ++mood)
@@ -384,7 +433,7 @@ public class FiguresBuilder extends JPanel {
 				}
 				xc = (2*xc + 1) / body.length;
 				yc = (2*yc + 1) / body.length;
-				result.add(new OneBodyFigure(false, body.clone(), new int[] { xc, yc }));
+				result.add(new Skeleton(body.clone(), new int[] { xc, yc }));
 			}
 		}
 		System.out.printf("Grown set of %d whole figures\n", result.size());
@@ -398,8 +447,8 @@ public class FiguresBuilder extends JPanel {
 	 * @param figure source figure
 	 * @return
 	 */
-	private static List<AbstractFigure> getGrownWhole(AbstractFigure figure) {
-		List<AbstractFigure> result = new LinkedList<>();
+	private static List<Skeleton> getGrownWhole(Skeleton figure) {
+		List<Skeleton> result = new LinkedList<>();
 		
 		int[] body = figure.getBody();
 		int length = body.length;
@@ -438,7 +487,7 @@ public class FiguresBuilder extends JPanel {
 					newBody[i++] += dy;
 				}
 			}
-			result.add(new OneBodyFigure(false, newBody));
+			result.add(new Skeleton(newBody));
 		}
 		
 		return result;

@@ -3,14 +3,13 @@ package game_engine;
 import javax.swing.Timer;
 
 import game_engine.figures.AbstractFigure;
-import game_engine.figures.Figure;
 import game_engine.figures.AbstractFiguresChooser;
-import game_engine.figures.FiguresManager;
+import game_engine.figures.FieldManager;
 import game_engine.scoring.AbstractScoringStrategy;
 
 /**
- * Game incapsulates the {@link Field} and set of {@link Figure}s. It delegates
- * {@link Action}s results calculations to {@link FiguresManager} and returns
+ * Game incapsulates the {@link Field} and set of {@link OneBodyFigure}s. It delegates
+ * {@link Action}s results calculations to {@link FieldManager} and returns
  * their results without any postprocessing. Uses specified subclass of
  * {@link AbstractScoringStrategy} to compute score.
  * 
@@ -26,7 +25,7 @@ public class Game {
 
 	private final AbstractFiguresChooser figuresChooser;
 	private Field field;
-	private Figure currentFigure;
+	private AbstractFigure currentFigure;
 	private final Timer timer;
 	
 	private static final int[] INTERVALS_PER_SPEED = new int[] {
@@ -57,31 +56,31 @@ public class Game {
 	}
 
 	public boolean performStep() {
-		boolean success = FiguresManager.move(currentFigure, field, 0, 1);
+		boolean success = currentFigure.move(field, 0, 1);
 		return success;
 	}
 
 	public boolean performAction(Action action) {
 		switch (action) {
 		case LEFT:
-			return FiguresManager.move(currentFigure, field, -1, 0);
+			return currentFigure.move(field, -1, 0);
 		case RIGHT:
-			return FiguresManager.move(currentFigure, field, 1, 0);
+			return currentFigure.move(field, 1, 0);
 		case DOWN:
-			if (FiguresManager.move(currentFigure, field, 0, 1)) {
+			if (currentFigure.move(field, 0, 1)) {
 				movedDown();
 				return true;
 			} else
 				return false;
 		case FULL_DOWN:
-			while(FiguresManager.move(currentFigure, field, 0, 1)) {
+			while(currentFigure.move(field, 0, 1)) {
 				movedDown();
 			}
 			return true;
 		case ROTATE:
-			return FiguresManager.rotate(currentFigure, field);
+			return currentFigure.rotate(field);
 		case VERTICAL_REFLECT:
-			return FiguresManager.reflectVertical(currentFigure, field);
+			return currentFigure.reflectVertical(field);
 		default:
 			break;
 		}
@@ -92,9 +91,9 @@ public class Game {
 		prize += scoringStrategy.figureMovedDown();
 	}
 
-	public boolean prepareNewFigure(AbstractFigure abstractFigure) {
-		this.currentFigure = new Figure(abstractFigure);
-		boolean success = FiguresManager.put(currentFigure, field);
+	public boolean prepareNewFigure(AbstractFigure abstractSkeleton) {
+		this.currentFigure = abstractSkeleton;
+		boolean success = currentFigure.put(field);
 		return success;
 	}
 
@@ -103,7 +102,7 @@ public class Game {
 	}
 
 	public void finishFigure() {
-		FiguresManager.embed(currentFigure, field);
+		currentFigure.embed(field);
 		figuresCount++;
 //		score += strategy.figureFinished(field);
 	}
@@ -120,13 +119,13 @@ public class Game {
 	}
 
 	public void deleteFullLines() {
-		int lines = FiguresManager.deleteFullLines(field);
+		int lines = FieldManager.deleteFullLines(field);
 		linesCount += lines;
 		prize += scoringStrategy.linesDeleted(lines);
 	}
 
-	public int[][] getFieldGrid() {
-		return field.getGrid();
+	public Field getField() {
+		return field;
 	}
 
 //	public int[] getFigureCoordinates() {
@@ -134,7 +133,7 @@ public class Game {
 //	}
 
 	public void moveField(int dx) {
-		FiguresManager.moveField(field, dx);
+		FieldManager.moveField(field, dx);
 	}
 
 	public int getSpeed() {
@@ -158,7 +157,7 @@ public class Game {
 		return prize + scoringStrategy.countScore(figuresCount, linesCount, speed, field);
 	}
 
-	public Figure getFigure() {
+	public AbstractFigure getFigure() {
 		return currentFigure;
 	}
 }

@@ -10,8 +10,8 @@ import game_engine.figures.FigureType;
  */
 public enum Level {
 
-	DEFAULT(32, 40, new FigureType[] {FigureType.SEPARATE_2_2, 
-			FigureType.SEPARATE_2_3,
+	DEFAULT(32, 40, new FigureType[] {FigureType.SEPARATE_5_5, 
+			FigureType.SEPARATE_4_4,FigureType.SEPARATE_4_5,FigureType.SEPARATE_5_4,
 			/*FigureType.PENETRATING_WHOLE_1,
 			FigureType.PENETRATING_WHOLE_2, FigureType.PENETRATING_WHOLE_3,
 			FigureType.PENETRATING_SEMIWHOLE_2,
@@ -19,8 +19,12 @@ public enum Level {
 			FigureType.WHOLE_4, FigureType.WHOLE_5, FigureType.WHOLE_6,
 			FigureType.WHOLE_7, FigureType.WHOLE_8, */}, true, true, false),
 
-	EASY(8, 12, new FigureType[] { FigureType.WHOLE_4 }, false, true, false),
+	SMALL(8, 12, new FigureType[] { FigureType.WHOLE_4 }, false, true, false),
 
+	CLASSIC_4(10, 20, new FigureType[] { FigureType.WHOLE_4 }, false, false, false),
+	CLASSIC_5(10, 20, new FigureType[] { FigureType.WHOLE_5 }, false, false, false),
+//	CLASSIC_6(),
+	
 	MEDIUM(12, 18, new FigureType[] { FigureType.PENETRATING_WHOLE_1,
 			FigureType.WHOLE_4, FigureType.WHOLE_5 }, false, true, false),
 
@@ -35,7 +39,10 @@ public enum Level {
 			FigureType.PENETRATING_SEMIWHOLE_3, FigureType.SEMIWHOLE_2,
 			FigureType.SEMIWHOLE_3, FigureType.WHOLE_1, FigureType.WHOLE_2,
 			FigureType.WHOLE_3, FigureType.WHOLE_4, FigureType.WHOLE_5,
-			FigureType.WHOLE_6, FigureType.WHOLE_7 }, true, true, false),
+			FigureType.WHOLE_6, FigureType.WHOLE_7,
+			FigureType.SEPARATE_2_2, FigureType.SEPARATE_2_3, FigureType.SEPARATE_3_2, 
+			FigureType.SEPARATE_3_3, FigureType.SEPARATE_4_3, FigureType.SEPARATE_3_4, 
+			}, true, true, false),
 
 	FULL(28, 36, FigureType.values(), true, true, false), ;
 

@@ -130,7 +130,7 @@ public class ParametersDialog extends JDialog {
 		gbl_contentPanel.rowWeights = new double[] { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE };
 		contentPanel.setLayout(gbl_contentPanel);
 		{
-			JLabel lblIncludeTypes = new JLabel("Figure types:");
+			JLabel lblIncludeTypes = new JLabel("OneBodyFigure types:");
 			lblIncludeTypes.setFont(new Font("Tahoma", Font.PLAIN, 14));
 			GridBagConstraints gbc_lblIncludeTypes = new GridBagConstraints();
 			gbc_lblIncludeTypes.gridwidth = 4;
@@ -423,7 +423,7 @@ public class ParametersDialog extends JDialog {
 			contentPanel.add(chckbxMovingField, gbc_chckbxMovingField);
 		}
 		{
-			JLabel lblFigureChooser = new JLabel("Figure chooser:");
+			JLabel lblFigureChooser = new JLabel("OneBodyFigure chooser:");
 			GridBagConstraints gbc_lblFigureChooser = new GridBagConstraints();
 			gbc_lblFigureChooser.gridwidth = 2;
 			gbc_lblFigureChooser.insets = new Insets(0, 0, 5, 0);
