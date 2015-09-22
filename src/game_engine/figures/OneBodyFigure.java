@@ -37,14 +37,25 @@ public class OneBodyFigure extends AbstractFigure {
 		return result;
 	}
 
+	@Override
+	public int[] getPosition() {
+		return position.clone();
+	}
+
+	@Override
+	public void setPosition(int[] newPosition) {
+		position = newPosition;
+	}
+
 	public OneBodyFigure clone() {
 		OneBodyFigure clone = new OneBodyFigure(unit.clone(), isPenetrating);
+		// XXX don't we need honest copying?
 		clone.position = position.clone();
 		return clone;
 	}
-	
-	//===============================================================================
-	
+
+	// ===============================================================================
+
 	@Override
 	public boolean put(AbstractField field) {
 		int dx = field.getWidth() / 2 - 1;
@@ -56,7 +67,8 @@ public class OneBodyFigure extends AbstractFigure {
 	@Override
 	public boolean rotate(AbstractField field) {
 		unit.nextMood();
-		boolean success = false;// = checkFreeCells(field.getGrid(), figure.getBody(), x, y);
+		boolean success = false;// = checkFreeCells(field.getGrid(),
+								// figure.getBody(), x, y);
 		// try to move down a bit
 		for (int dy = 0; dy <= 2; ++dy) {
 			success = field.checkFreeCells(this, 0, dy) > 0;
@@ -80,12 +92,12 @@ public class OneBodyFigure extends AbstractFigure {
 			while (true) {
 				++iter;
 				check = field.checkFreeCells(this, iter * dx, iter * dy);
-				if(check == 1) {// OK
+				if (check == 1) {// OK
 					dx = iter * dx;
 					dy = iter * dy;
 					break;
 				}
-				if (check == -1) {
+				if (check == -1) {// we reached border
 					return false;
 				}
 			}
@@ -97,6 +109,41 @@ public class OneBodyFigure extends AbstractFigure {
 		position[0] += dx;
 		position[1] += dy;
 		return true;
+	}
+
+	@Override
+	public int computeFullDownDistance(AbstractField field) {
+		int dyMax = 0;
+		if (isPenetrating) {
+			int iter = 0;
+			int check;
+			while (true) {
+				++iter;
+				check = field.checkFreeCells(this, 0, iter);
+				if (check == 1) {// OK
+					dyMax = iter;
+				}
+				if (check == -1) {// we reached border
+					break;
+				}
+			}
+		}
+		// common figure
+		else {
+			int[] body = unit.getBody();
+			int max = field.getHeight() + 1;
+			for (int i = 0; i < body.length; i += 2) {
+				int cx = body[i] + position[0];
+				int cy = body[i + 1] + position[1];
+				int count = field.countFreeCellsDownFrom(cx, cy + 1);
+				if (count < max) {
+					max = count;
+				}
+			}
+			dyMax = max;
+		}
+//		position[1] += dy;
+		return dyMax;
 	}
 
 	@Override
@@ -129,17 +176,16 @@ public class OneBodyFigure extends AbstractFigure {
 		return success;
 	}
 
-//	@Override
-//	protected int checkFreeCells(AbstractField field, int dx, int dy) {
-//		if (field instanceof FastField) {
-//			return checkFreeCells((FastField) field, dx, dy);
-//		}
-//		return checkFreeCells((Field) field, dx, dy);
-//	}
+	// @Override
+	// protected int checkFreeCells(AbstractField field, int dx, int dy) {
+	// if (field instanceof FastField) {
+	// return checkFreeCells((FastField) field, dx, dy);
+	// }
+	// return checkFreeCells((Field) field, dx, dy);
+	// }
 
 	@Override
-	public int checkFreeCells(Field field, int dx,
-			int dy) {
+	public int checkFreeCells(Field field, int dx, int dy) {
 		int[][] grid = field.getGrid();
 		int w = grid.length;
 		int h = grid[0].length;

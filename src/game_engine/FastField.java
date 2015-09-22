@@ -60,4 +60,16 @@ public class FastField extends AbstractField {
 		return model.evaluate(this);
 	}
 
+	@Override
+	public int countFreeCellsDownFrom(int x, int y) {
+		int count = 0;
+		while (y + count < height) {
+			if (grid[x * height + y + count]) {
+				break;
+			}
+			count++;
+		}
+		return count;
+	}
+
 }

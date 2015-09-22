@@ -6,6 +6,8 @@ import game_engine.figures.AbstractFigure;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.util.List;
 
 import javax.swing.JFrame;
@@ -40,6 +42,46 @@ public class Visualizer {
 			}
 		});
 
+		drawer.addKeyListener(new KeyListener() {
+			
+			@Override
+			public void keyTyped(KeyEvent e) {
+			}
+			
+			@Override
+			public void keyReleased(KeyEvent e) {
+			}
+			
+			@Override
+			public void keyPressed(KeyEvent e) {
+				switch(e.getKeyCode()) {
+				case KeyEvent.VK_SPACE:
+					if(timer.isRunning())
+						timer.stop();
+					else
+						timer.start();
+					break;
+					
+				case KeyEvent.VK_ENTER:
+					timer.stop();
+					visualize();
+					break;
+					
+				case KeyEvent.VK_LEFT:
+					timer.stop();
+					if(count > 1)
+						count -= 2;
+					visualize();
+					break;
+					
+				case KeyEvent.VK_RIGHT:
+					timer.stop();
+					visualize();
+					break;
+				}
+			}
+		});
+		drawer.setFocusable(true);
 	}
 
 	public void show(List<AbstractField> fieldsList, List<AbstractFigure> figuresList) {
@@ -55,15 +97,15 @@ public class Visualizer {
 	 * 
 	 */
 	protected void visualize() {
-		if (count == fieldsArray.size()) {
+		if (count >= fieldsArray.size()) {
 			timer.stop();
 			return;
 		}
 		AbstractField field = fieldsArray.get(count);
 		AbstractFigure figure = figuresSequence.get(count);
 		figure.put(field);
-		drawer.figureToDraw(figure);
-		drawer.fieldToDraw(field);
+		drawer.setFigureToDraw(figure);
+		drawer.setFieldToDraw(field);
 		drawer.repaint();
 		count++;
 	}

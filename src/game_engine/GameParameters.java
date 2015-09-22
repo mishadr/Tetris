@@ -26,6 +26,7 @@ public class GameParameters {
 
 	private final boolean reflectionsAllowed;
 	private final boolean pauseAllowed;
+	private final boolean projectionShowed;
 	private final boolean nextFiguresShowed;
 
 	private final boolean downShiftAllowed;
@@ -47,7 +48,7 @@ public class GameParameters {
 	 */
 	public GameParameters(int width, int height, FigureType[] includedTypes,
 			AbstractScoringStrategy scoringStrategy, boolean allowReflections,
-			boolean allowPause, boolean allowDownShift,
+			boolean allowPause/*, boolean showProjection*/, boolean allowDownShift,
 			boolean allowFigureSwap, boolean showNextFigures,
 			boolean deleteFullLines, boolean moveField, boolean increaseSpeed,
 			AbstractFiguresChooser figuresChooser) {
@@ -56,6 +57,7 @@ public class GameParameters {
 		this.includedTypes = includedTypes;
 		this.reflectionsAllowed = allowReflections;
 		this.pauseAllowed = allowPause;
+		this.projectionShowed = true;
 		this.nextFiguresShowed = showNextFigures;
 
 		this.downShiftAllowed = allowDownShift;
@@ -68,7 +70,7 @@ public class GameParameters {
 		this.increaseSpeed = increaseSpeed;
 		
 		allTimeFading = true;
-		fadeWhenFigureFinished = false;
+		fadeWhenFigureFinished = true;
 		fadingIterationsCount = 8;
 	}
 
@@ -92,8 +94,10 @@ public class GameParameters {
 		this.figuresChooser = new UniformByItemFiguresChooser(includedTypes);
 		this.increaseSpeed = true;
 		
+		// TODO make buttons for these options
+		projectionShowed = true;
 		allTimeFading = false;
-		fadeWhenFigureFinished = true;
+		fadeWhenFigureFinished = false;
 		fadingIterationsCount = 8;
 	}
 
@@ -159,5 +163,9 @@ public class GameParameters {
 
 	public int getFadingIterationsCount() {
 		return fadingIterationsCount;
+	}
+
+	public boolean isProjectionEnabled() {
+		return projectionShowed;
 	}
 }

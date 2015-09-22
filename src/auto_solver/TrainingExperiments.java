@@ -14,7 +14,8 @@ import java.io.File;
  */
 public class TrainingExperiments {
 
-	public static final String dirPath = "training sets/";
+	public static final String trainingDirPath = "training sets/";
+	public static final String testDirPath = "test sets/";
 
 	/**
 	 * Generates set of figure sequences of the same size, determined by the
@@ -36,6 +37,8 @@ public class TrainingExperiments {
 			solver.generateFigures(params, setSize);
 			solver.saveFiguresSequence(dirName + "figures" + i + ".fs");
 		}
+		System.out.printf("Generated %d sets of %d size in %s\n", setsCount,
+				setSize, dirName);
 	}
 
 	public static void main(String[] args) {
@@ -48,7 +51,8 @@ public class TrainingExperiments {
 
 		Solver solver = new Solver(params);
 		
-//		generateFigureSequences(100, 500, params, dirPath + paramsDirPath);
+//		generateFigureSequences(100, 500, params, trainingDirPath + paramsDirPath);
+//		generateFigureSequences(100, 1000, params, testDirPath + paramsDirPath);
 //		solver.generateFigures(params, 10000);
 //		solver.saveFiguresSequence(testFileName);
 		
@@ -56,7 +60,7 @@ public class TrainingExperiments {
 
 		// TODO leave only fields with min score as training sets
 		Trainer trainer = new Trainer();
-		trainer.setFiguresDirPath(dirPath + paramsDirPath);
+		trainer.setFiguresDirPath(trainingDirPath + paramsDirPath);
 
 		Model model = Model.defaultModel();
 		
@@ -66,12 +70,17 @@ public class TrainingExperiments {
 //		solver.visualize(300);
 		
 		long t = System.nanoTime();
-		Model trainedModel = trainer.trainByMonteCarlo(params, model);
+//		Model trainedModel = trainer.trainByMonteCarlo(params, model);
+//		Model trainedModel = trainer.trainByGradientShift(params, model);
+//		Model trainedModel = trainer.trainGenetic(params, model);
 		System.out.printf("training time: %d mcs\n", (System.nanoTime() - t)/1000000);
+//		System.out.printf("Trained model: %s\n", trainedModel);
 		
-//		score = solver.solve(trainedModel, true);
-//		System.out.println("result after training: " + score);
-//		solver.visualize(500);
+//		Model lastModel = new Model(1.0, 22.360679774997898, 11.390625, 5.0625, 0.2962962962962963, 1.0, 1.0);
+		// big test
+//		trainer.testModel(testDirPath + paramsDirPath, trainedModel, params);
+		
+		solver.solve(new Model(1.0, 24.306758188201325, 25.15395047159094, 10.589260779166208, 0.575209673709097, 2.2109031792267406, 0.35060015333276384), true);
 
 		// Model trainedModel = new Trainer().trainParametersSequently(params,
 		// new Model());
@@ -100,7 +109,7 @@ public class TrainingExperiments {
 		 * 0.48142405831659996
 		 */
 //		System.out.println("result: " + score);
-//		solver.visualize();
+		solver.visualize(900);
 
 	}
 

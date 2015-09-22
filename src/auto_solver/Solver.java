@@ -2,12 +2,10 @@ package auto_solver;
 
 import game_engine.AbstractField;
 import game_engine.FastField;
-import game_engine.Field;
 //import game_engine.Field;
 import game_engine.GameParameters;
 import game_engine.figures.AbstractFigure;
 import game_engine.figures.AbstractFiguresChooser;
-import game_engine.figures.FieldManager;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -21,8 +19,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * Solver can run a solver model on a game with figures sequence using a solving
- * model.
+ * Solver can run a solving model on a game with predefined figures sequence and
+ * field parameters.
  * 
  * @author misha
  * 
@@ -41,10 +39,10 @@ public class Solver {
 	 * @param params
 	 */
 	public Solver(GameParameters params) {
-		fieldInit = new Field(params.getWidth(), params.getHeight());
+		// fieldInit = new Field(params.getWidth(), params.getHeight());
 		// or fast variant
-//		fieldInit = new FastField(params.getWidth(), params.getHeight());
-		
+		fieldInit = new FastField(params.getWidth(), params.getHeight());
+
 		fieldsList = new ArrayList<>();
 		figuresSequence = new ArrayList<>();
 		// FieldManager.fillBottomLinesRandomly(fieldInit,
@@ -95,6 +93,11 @@ public class Solver {
 		}
 	}
 
+	public void drop() {
+		fieldsList = new ArrayList<>();
+		fieldsList = new ArrayList<>();
+	}
+
 	/**
 	 * Performs playing iterations according to solving model until it's
 	 * possible. Saves all intermediate fields if needed.
@@ -105,13 +108,14 @@ public class Solver {
 	 * @return final score
 	 */
 	public double solve(Model model, boolean save) {
+		drop();
 		AbstractField field = fieldInit.clone();
 		int iter = 0;
 		for (AbstractFigure figure : figuresSequence) {
-			if(save) {
-				fieldsList.add(field.clone());				
+			if (save) {
+				fieldsList.add(field.clone());
 			}
-			field = playFigure(figure, field, model);
+			field = playFigure(figure.clone(), field, model);
 			if (field == null)
 				break;
 			iter++;
@@ -129,13 +133,15 @@ public class Solver {
 	 * @param model
 	 * @return
 	 */
-	private AbstractField playFigure(AbstractFigure figure, AbstractField field, Model model) {
+	private AbstractField playFigure(AbstractFigure figure,
+			AbstractField field, Model model) {
 		List<AbstractField> variants = findVariants(field, figure);
 		if (variants.isEmpty()) {
 			return null;
 		}
 		return chooseBestField(variants, model);
 	}
+
 	// TODO use boolean fields (and of one line) for speeding up
 
 	/**
@@ -145,7 +151,8 @@ public class Solver {
 	 * @param figure
 	 * @return
 	 */
-	private List<AbstractField> findVariants(AbstractField field, AbstractFigure figure) {
+	private List<AbstractField> findVariants(AbstractField field,
+			AbstractFigure figure) {
 		List<AbstractField> variants = new LinkedList<>();
 		boolean ok;
 		ok = figure.put(field);
@@ -161,12 +168,13 @@ public class Solver {
 					ok = figure.move(field, -1, 0);
 					if (!ok)
 						break;
-					AbstractFigure newFigure = figure.clone();
-					for (; newFigure.move(field, 0, 1);) {// FIXME slow
-						/* full down */
-					}
+					int[] pos = figure.getPosition();
+					// AbstractFigure newFigure = figure.clone();
 					AbstractField newField = field.clone();
-					newFigure.embed(newField);
+					int dist = figure.computeFullDownDistance(field);
+					figure.move(field, 0, dist);
+					figure.embed(newField);
+					figure.setPosition(pos);
 					variants.add(newField);
 				}
 				// move back
@@ -177,12 +185,12 @@ public class Solver {
 					ok = figure.move(field, 1, 0);
 					if (!ok)
 						break;
-					AbstractFigure newFigure = figure.clone();
-					for (; newFigure.move(field, 0, 1);) {// FIXME slow -- 19% of time!
-						/* full down */
-					}
+					int[] pos = figure.getPosition();
+					// AbstractFigure newFigure = figure.clone();
 					AbstractField newField = field.clone();
-					newFigure.embed(newField);
+					figure.computeFullDownDistance(field);
+					figure.embed(newField);
+					figure.setPosition(pos);
 					variants.add(newField);
 				}
 				// move back
@@ -210,7 +218,8 @@ public class Solver {
 	 * @param model
 	 * @return best field or null
 	 */
-	private AbstractField chooseBestField(List<AbstractField> fields, Model model) {
+	private AbstractField chooseBestField(List<AbstractField> fields,
+			Model model) {
 		AbstractField best = null;
 		double max = -Double.MAX_VALUE;
 		for (AbstractField f : fields) {

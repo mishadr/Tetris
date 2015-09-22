@@ -18,6 +18,7 @@ public class DrawerPanel extends JPanel {
 	private AbstractField field;
 //	private int[][] fieldGrid;
 	private AbstractFigure figure;
+	private int figureProjectionDistance;
 	private int fadingIterations = 8;
 
 	public static int MAX_WIDTH = 1200;
@@ -32,7 +33,7 @@ public class DrawerPanel extends JPanel {
 		setBackground(Color.black);
 	}
 
-	public void fieldToDraw(AbstractField newField) {
+	public void setFieldToDraw(AbstractField newField) {
 //		this.game = game;
 //		int[][] grid = game.getFieldGrid();
 		this.field = newField;
@@ -42,7 +43,7 @@ public class DrawerPanel extends JPanel {
 //		if(((Frame)parent).isResizable())
 //			parent.setSize(size * grid.length + 112, size * grid[0].length + 64); // if resizable
 //		else
-			parent.setSize(size * w + 102, size * h + 54);
+			parent.setSize(size * w + 102, size * h + 51);
 	}
 	
 //	/**
@@ -61,15 +62,19 @@ public class DrawerPanel extends JPanel {
 //		parent.setSize(size * grid.length + 112, size * grid[0].length + 64);
 //	}
 	
-	public void figureToDraw(AbstractFigure figure) {
+	public void setFigureToDraw(AbstractFigure figure) {
 		this.figure = figure;
 	}
 
-	void setSize(int size) {
-		this.size = size;
-//		int[][] grid = game.getFieldGrid();
-		parent.setSize(size * field.getWidth() + 112, size * field.getHeight() + 64);
-	}
+	public void setFigureProjectionDistance(int distance) {
+		this.figureProjectionDistance = distance;
+}
+
+//	void setSize(int size) {
+//		this.size = size;
+////		int[][] grid = game.getFieldGrid();
+//		parent.setSize(size * field.getWidth() + 112, size * field.getHeight() + 64);
+//	}
 
 	@Override
 	protected void paintComponent(Graphics graphics) {
@@ -84,12 +89,6 @@ public class DrawerPanel extends JPanel {
 //		drawFieldAndFigure(g, game.getFieldGrid(), game.getFigureCoordinates());
 		drawField(g);
 		if(figure != null) {
-			if(figure.isPenetrating()) {
-				g.setColor(Color.magenta);
-			}
-			else {
-				g.setColor(Color.green);
-			}
 			drawFigure(g, figure);
 		}
 		
@@ -98,6 +97,7 @@ public class DrawerPanel extends JPanel {
 	// XXX bad idea with null game?
 	private void drawField(Graphics2D g) {
 		if(field == null) {
+			System.err.println("Null field was given to Drawer");
 			return;
 		}
 		int w = field.getWidth();
@@ -105,7 +105,7 @@ public class DrawerPanel extends JPanel {
 		if(field instanceof FastField) {
 			// FastField drawing
 			boolean[] grid = ((FastField) field).getGrid();
-			g.setColor(Color.green);
+			g.setColor(Color.blue);
 			for (int i = 0; i < w; ++i) {
 				for (int j = 0; j < h; ++j) {
 					boolean cell = grid[i * h + j];
@@ -143,13 +143,28 @@ public class DrawerPanel extends JPanel {
 			drawFigure(g, ((TwoBodiesFigure) figure).getRight());
 			return;
 		}
+		// draw projection if needed
+		if (figureProjectionDistance >= 0) {
+			g.setColor(Color.darkGray);
+			for (int i = 0, cs[] = figure.getCoordinates(); i < cs.length;) {
+				g.drawRect(size * cs[i++], size
+						* (cs[i++] + figureProjectionDistance), size - 2,
+						size - 2);
+			}
+		}
+		// draw real figure
+		if (figure.isPenetrating()) {
+			g.setColor(Color.magenta);
+		} else {
+			g.setColor(Color.green);
+		}
 		for (int i = 0, cs[] = figure.getCoordinates(); i < cs.length;) {
-			g.fillRect(size * cs[i++], size * cs[i++], size - 1, size - 1);
+			g.fillRect(size * cs[i++], size * cs[i++], size-1, size-1);
 		}
 	}
 
 	/**
-	 * value: 1 -> green .. fadingIterations -> blue
+	 * value: (1 -> green) .. (fadingIterations -> blue)
 	 * 
 	 * @param value
 	 * @return

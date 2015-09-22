@@ -116,6 +116,17 @@ public class TwoBodiesFigure extends AbstractFigure {
 	}
 
 	@Override
+	public int[] getPosition() {
+		// XXX Must not be used.
+		return null;
+	}
+
+	@Override
+	public void setPosition(int[] newPosition) {
+		// XXX Must not be used.
+	}
+
+	@Override
 	public boolean put(AbstractField field) {
 		// TODO check
 		boolean b = item1.put(field);
@@ -163,6 +174,12 @@ public class TwoBodiesFigure extends AbstractFigure {
 		}
 		return b1;
 
+	}
+
+	@Override
+	public int computeFullDownDistance(AbstractField field) {
+		return Math.min(item1.computeFullDownDistance(field),
+				item2.computeFullDownDistance(field));
 	}
 
 	@Override

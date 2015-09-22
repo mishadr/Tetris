@@ -1,16 +1,15 @@
 package auto_solver;
 
+import auto_solver.genetic.Organism;
 import game_engine.AbstractField;
 import game_engine.FastField;
 import game_engine.Field;
 import game_engine.figures.FieldManager;
 
-import java.util.LinkedList;
-import java.util.List;
+public class Model implements Organism {
 
-public class Model {
-
-	// parameters
+	// parameters number
+	private static final int size = 7;
 	
 //	List<Parameter> included;
 	// weights:
@@ -40,13 +39,30 @@ public class Model {
 	
 
 	/**
-	 * Model with equal parameters.
+	 * Model with first <code>size</code> parameters set to 1.0.
 	 * 
 	 * @return
 	 */
 	public static Model defaultModel() {
-		return new Model(1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0);
-		// return new Model(0.98, 2.93, 0.88, 1.0);
+		double[] params = new double[size];
+		params[0] = 1.0;
+		for(int i=0;i<size;++i)
+			params[i] = 1.0;
+		return new Model(params);
+	}
+	
+	/**
+	 * Model with random parameters uniformly in [0, <code>scope</code>).
+	 * 
+	 * @param scope
+	 * @return
+	 */
+	public static Model randomModel(double scope) {
+		double[] params = new double[size];
+		params[0] = 1.0;
+		for(int i=1;i<size;++i)
+			params[i] = Math.random() * scope;
+		return new Model(params);
 	}
 
 	public Model(double... params) {
@@ -105,7 +121,7 @@ public class Model {
 		result += fitting(field);
 		result += heightAboveHole(field);
 		result += holesInRow(field);
-//		result += relief(field);
+		result += relief(field);
 //		System.out.println(result);
 		return result;
 	}
@@ -234,7 +250,8 @@ public class Model {
 			}
 			if (j < h) {
 				height = j - upperHeight;// > 0
-				result += Math.min(0, heightAboveHoleCoeff * (-height));// must be < 0
+				double x = heightAboveHoleCoeff * (-height);// must be < 0
+				result += x < 0 ? x : 0;
 			}
 		}
 		return result;
@@ -262,28 +279,34 @@ public class Model {
 						if (!grid[k * h + j])
 							holesInRow++;
 					}
-					result += Math.min(0, holesInRowCoeff * (holesInRow-2));// mustn't be > 0
-					break;// if only highest hole considered
+					double x = holesInRowCoeff * (holesInRow-2);// must be < 0
+					result += x < 0 ? x : 0;
+					break;// we condider only the highest hole
 				}
 			}
 		}
 		return result;
 	}
-
+	
+	// invokation works slowly!
+	public static final int abs(int x) {
+		return x < 0 ? -x : x;
+	}
+	
 	private double relief(FastField field) {
 		boolean[] grid = field.getGrid();
 		int w = field.getWidth();
 		int h = field.getHeight();
 
 		double result = 0;
-		int j=0;
+		int leftHeight, j=0;
 		for (; j < h; ++j) {
 			if (grid[j]) {
 				break;
 			}
 		}
-		int leftHeight = j;
 		for (int i = 1; i < w; ++i) {
+			leftHeight = j;
 			j = 0;
 			for (; j < h; ++j) {
 				if (grid[i * h + j]) {
@@ -291,12 +314,14 @@ public class Model {
 				}
 			}
 
-			int diff = Math.abs(j - leftHeight);
-			if (diff > 1)// do not fire 1 brick differences
-			{
+			int diff = (j - leftHeight);
+			diff = diff < 0 ? -diff : diff;
+//			int y = diff >>> 31;
+//			diff = (diff^y) - y;
+			// do not fire 1 brick differences
+			if (diff > 1) {
 				result -= reliefCoeff * diff;
 			}
-			leftHeight = j;
 		}
 		return result;
 	}
@@ -529,11 +554,36 @@ public class Model {
 
 	@Override
 	public String toString() {
-		return "Model [potential=" + potentialCoeff + ", fullLine="
-				+ fullLineCoeff + ", hole=" + holeCoeff + ", fitting="
-				+ fittingCoeff + ", aboveHole=" + heightAboveHoleCoeff
-				+ ", holesInRow=" + holesInRowCoeff + ", relief=" + reliefCoeff
+		return "Model [potential=" + potentialCoeff
+				+ ", fullLine=" + fullLineCoeff
+				+ ", hole=" + holeCoeff
+				+ ", fitting=" + fittingCoeff
+				+ ", aboveHole=" + heightAboveHoleCoeff
+				+ ", holesInRow=" + holesInRowCoeff
+				+ ", relief=" + reliefCoeff
 				+ "]";
+	}
+
+	@Override
+	public void mutate() {
+		double[] params = getParameters();
+		for (int i = 1; i < size; ++i) {// first param fixed
+			params[i] *= (Math.random() * 1 + 0.6);
+		}
+		setParameters(params);
+	}
+
+	@Override
+	public Organism crossingoverWith(Organism o) {
+		Model model = (Model) o;
+		double[] p0 = getParameters();
+		double[] p1 = model.getParameters();
+		double[] p = new double[size];
+		p[0] = 1.0;
+		for (int i = 1; i < size; ++i) {
+			p[i] = Math.random() < 0.5 ? p0[i] : p1[i];
+		}
+		return new Model(p);
 	}
 
 }

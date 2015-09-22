@@ -377,15 +377,15 @@ public class SkeletonsBuilder extends JPanel {
 		type2list.put(FigureType.WHOLE_4, grown = growWholeFigures(grown));//7
 		type2list.put(FigureType.WHOLE_5, grown = growWholeFigures(grown));//18
 		type2list.put(FigureType.WHOLE_6, grown = growWholeFigures(grown));//60
-		progressBar.setValue(3);
+		progressBar.setValue(5);
 		progressBar.setString("building 7 blocks figures");
 		type2list.put(FigureType.WHOLE_7, grown = growWholeFigures(grown));//196
-		progressBar.setValue(15);
+		progressBar.setValue(25);
 		progressBar.setString("building 8-blocks figures");
 		type2list.put(FigureType.WHOLE_8, grown = growWholeFigures(grown));//704
-		progressBar.setValue(30);
-		progressBar.setString("building 9-blocks figures");
-		type2list.put(FigureType.WHOLE_9, grown = growWholeFigures(grown));//2500
+//		progressBar.setValue(30);
+//		progressBar.setString("building 9-blocks figures");
+//		type2list.put(FigureType.WHOLE_9, grown = growWholeFigures(grown));//2500
 //		progressBar.setValue(20);
 //		progressBar.setString("building 10-blocks figures");
 //		type2list.put(FigureType.WHOLE_10, grown = growWholeFigures(grown));//9189

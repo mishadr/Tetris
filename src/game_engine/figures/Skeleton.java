@@ -1,13 +1,12 @@
 package game_engine.figures;
 
 
-
 /**
- * Skeleton of any figure, it is firm construction. It contains its
- * body (array of coordinates of all blocks of skeleton) and center (center of
- * next rotation = -displacement after the turn). This representation doesn't
- * know about field, position, moving properties.
- * Skeleton rotates as a whole object.
+ * Skeleton of any figure, a firm construction. It provides basic
+ * transformations: rotation and reflection. It contains its body (array of
+ * coordinates of all blocks of skeleton) and center (center of next rotation =
+ * -displacement after the turn). This representation doesn't know about field,
+ * position, moving properties. Skeleton rotates as a whole object.
  * 
  * @author misha
  *

@@ -68,4 +68,17 @@ public class Field extends AbstractField {
 	public double evaluate(Model model) {
 		return model.evaluate(this);
 	}
+
+	@Override
+	public int countFreeCellsDownFrom(int x, int y) {
+		int count = 0;
+		while (y + count < height) {
+			if (isBuisy(grid[x][y + count])) {
+				break;
+			}
+			count++;
+		}
+		return count;
+	}
+
 }

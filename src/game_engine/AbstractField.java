@@ -50,4 +50,13 @@ public abstract class AbstractField {
 	 * @param model
 	 */
 	public abstract double evaluate(Model model);
+
+	/**
+	 * Counts number of free cells downwards from the specified one.
+	 * 
+	 * @param x
+	 * @param y
+	 * @return
+	 */
+	public abstract int countFreeCellsDownFrom(int x, int y);
 }

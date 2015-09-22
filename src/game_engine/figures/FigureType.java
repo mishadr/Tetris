@@ -28,6 +28,7 @@ public enum FigureType {
 	PENETRATING_SEMIWHOLE_3,
 	SEMIWHOLE_2,
 	SEMIWHOLE_3,
+	
 	SEPARATE_2_2,
 	SEPARATE_2_3,
 	SEPARATE_2_4,
@@ -50,5 +51,6 @@ public enum FigureType {
 //	SEPARATE_3,
 //	SEPARATE_4, 
 	;
+	public static final int SEPARATE_MAX_BRICKS = 5;
 	public static final int WHOLE_MAX_BRICKS = 8;
 }

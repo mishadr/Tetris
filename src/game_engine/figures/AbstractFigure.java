@@ -14,7 +14,6 @@ import game_engine.Field;
 public abstract class AbstractFigure implements java.io.Serializable {
 
 	private static final long serialVersionUID = -772900941073049175L;
-	
 
 	public AbstractFigure() {
 	}
@@ -26,10 +25,33 @@ public abstract class AbstractFigure implements java.io.Serializable {
 	 */
 	public abstract int[] getCoordinates();
 
+	/**
+	 * Copies current position on the field.
+	 * <p>
+	 * <i>This method is for speeding up solver for {@link OneBodyFigure}s only,
+	 * use carefully!</i>
+	 * 
+	 * @return
+	 */
+	public abstract int[] getPosition();
+
+	/**
+	 * Sets position on the field (as link).
+	 * <p>
+	 * <i>This method is for speeding up solver for {@link OneBodyFigure}s only,
+	 * use carefully!</i>
+	 * 
+	 * @param newPosition
+	 */
+	public abstract void setPosition(int[] newPosition);
+
+	/**
+	 * Honestly makes a copy of the figure.
+	 */
 	public abstract AbstractFigure clone();
 
-	//===============================================================================
-	
+	// ===============================================================================
+
 	/**
 	 * Tries to put figure on the top of {@link Field}.
 	 * 
@@ -38,7 +60,7 @@ public abstract class AbstractFigure implements java.io.Serializable {
 	 */
 	public abstract boolean put(AbstractField field);
 
-//	public abstract boolean put(FastField field);
+	// public abstract boolean put(FastField field);
 
 	/**
 	 * Tries to rotate figure in the {@link Field}.
@@ -48,7 +70,7 @@ public abstract class AbstractFigure implements java.io.Serializable {
 	 */
 	public abstract boolean rotate(AbstractField field);
 
-//	public abstract boolean rotate(FastField field);
+	// public abstract boolean rotate(FastField field);
 
 	/**
 	 * Tries to move figure in the {@link Field} by (dx, dy).
@@ -59,16 +81,18 @@ public abstract class AbstractFigure implements java.io.Serializable {
 	 * @return success
 	 */
 	public abstract boolean move(AbstractField field, int dx, int dy);
-	
-//	public abstract boolean move(FastField field, int dx, int dy);
+
+	// public abstract boolean move(FastField field, int dx, int dy);
+
+	public abstract int computeFullDownDistance(AbstractField field);
 
 	public abstract void embed(AbstractField field);
-	
-//	public abstract void embed(FastField newField);
+
+	// public abstract void embed(FastField newField);
 
 	public abstract boolean reflectVertical(AbstractField field);
 
-//	public abstract boolean reflectVertical(FastField field);
+	// public abstract boolean reflectVertical(FastField field);
 
 	/**
 	 * Check if specified cells are free in the grid, using
@@ -83,8 +107,10 @@ public abstract class AbstractFigure implements java.io.Serializable {
 	 * @return 1 if OK, 0 if figure intersects buisy area, -1 if figure comes
 	 *         out of field
 	 */
-//	protected abstract int checkFreeCells(AbstractField field, int dx, int dy);
+	// protected abstract int checkFreeCells(AbstractField field, int dx, int
+	// dy);
 	public abstract int checkFreeCells(Field field, int dx, int dy);
+
 	public abstract int checkFreeCells(FastField field, int dx, int dy);
 
 	public abstract boolean isPenetrating();

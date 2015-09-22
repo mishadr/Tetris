@@ -8,10 +8,11 @@ import game_engine.figures.FieldManager;
 import game_engine.scoring.AbstractScoringStrategy;
 
 /**
- * Game incapsulates the {@link Field} and set of {@link OneBodyFigure}s. It delegates
- * {@link Action}s results calculations to {@link FieldManager} and returns
- * their results without any postprocessing. Uses specified subclass of
- * {@link AbstractScoringStrategy} to compute score.
+ * Game incapsulates the {@link Field} and current active {@link AbstractFigure}
+ * . It delegates {@link Action}s' results calculations to {@link FieldManager}
+ * in order to update the {@link Field} and returns them without any
+ * postprocessing. Uses specified subclass of {@link AbstractScoringStrategy} to
+ * compute score.
  * 
  * @author misha
  * 
@@ -36,6 +37,7 @@ public class Game {
 	private int linesCount;
 	private int figuresCount;
 	private double prize;// Extra prize plus to constant score
+	private int fullDownDist;
 
 	public Game(Timer timer, GameParameters params) {
 		this.timer = timer;
@@ -55,45 +57,60 @@ public class Game {
 		timer.setDelay(INTERVALS_PER_SPEED[0]);
 	}
 
-	public boolean performStep() {
+	public boolean performStepDown() {
 		boolean success = currentFigure.move(field, 0, 1);
+		fullDownDist = currentFigure.computeFullDownDistance(field);
 		return success;
 	}
 
-	public boolean performAction(Action action) {
+	public boolean tryPerformAction(Action action) {
+		boolean success;
 		switch (action) {
 		case LEFT:
-			return currentFigure.move(field, -1, 0);
+			success = currentFigure.move(field, -1, 0);
+			fullDownDist = currentFigure.computeFullDownDistance(field);
+			return success;
 		case RIGHT:
-			return currentFigure.move(field, 1, 0);
+			success = currentFigure.move(field, 1, 0);
+			fullDownDist = currentFigure.computeFullDownDistance(field);
+			return success;
 		case DOWN:
 			if (currentFigure.move(field, 0, 1)) {
-				movedDown();
+				fullDownDist = currentFigure.computeFullDownDistance(field);
+				whenMovedDown();
 				return true;
-			} else
-				return false;
-		case FULL_DOWN:
-			while(currentFigure.move(field, 0, 1)) {
-				movedDown();
 			}
+			return false;
+		case FULL_DOWN:
+//			while(currentFigure.move(field, 0, 1)) {
+//				movedDown();
+//			}
+			fullDownDist = currentFigure.computeFullDownDistance(field);
+			currentFigure.move(field, 0, fullDownDist);
+			fullDownDist = 0;
 			return true;
 		case ROTATE:
-			return currentFigure.rotate(field);
+			success = currentFigure.rotate(field);
+			fullDownDist = currentFigure.computeFullDownDistance(field);
+			return success;
 		case VERTICAL_REFLECT:
-			return currentFigure.reflectVertical(field);
+			success = currentFigure.reflectVertical(field);
+			fullDownDist = currentFigure.computeFullDownDistance(field);
+			return success;
 		default:
 			break;
 		}
 		return false;
 	}
 
-	private void movedDown() {
+	private void whenMovedDown() {
 		prize += scoringStrategy.figureMovedDown();
 	}
 
 	public boolean prepareNewFigure(AbstractFigure abstractSkeleton) {
 		this.currentFigure = abstractSkeleton;
 		boolean success = currentFigure.put(field);
+		this.fullDownDist = currentFigure.computeFullDownDistance(field);
 		return success;
 	}
 
@@ -159,5 +176,9 @@ public class Game {
 
 	public AbstractFigure getFigure() {
 		return currentFigure;
+	}
+
+	public int getFigureProjectionDistance() {
+		return fullDownDist;
 	}
 }

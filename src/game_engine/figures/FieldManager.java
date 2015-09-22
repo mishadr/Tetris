@@ -147,7 +147,7 @@ public class FieldManager {
 //		}
 //	}
 //
-	public static int deleteFullLines(Field field) {
+	public static final int deleteFullLines(Field field) {
 		int count = 0;
 		int[][] grid = field.getGrid();
 		int w = grid.length;
@@ -170,7 +170,7 @@ public class FieldManager {
 		return count;
 	}
 
-	public static int deleteFullLines(FastField field) {
+	public static final int deleteFullLines(FastField field) {
 		int count = 0;
 		boolean[] grid = field.getGrid();
 		int w = field.getWidth();
@@ -190,7 +190,7 @@ public class FieldManager {
 		return count;
 	}
 
-	public static void pullDown(int[][] grid, int h) {
+	public static final void pullDown(int[][] grid, int h) {
 		for (int i = 0; i < grid.length; ++i) {
 			for (int j = h; j > 0;) {
 				grid[i][j] = grid[i][--j];
@@ -199,7 +199,7 @@ public class FieldManager {
 		}
 	}
 
-	public static void pullDown(boolean[] grid, int w, int h, int level) {
+	public static final void pullDown(boolean[] grid, int w, int h, int level) {
 		for (int i = 0; i < w; ++i) {
 			for (int j = level; j > 0;) {
 				grid[i * h + j] = grid[i * h + --j];
@@ -225,7 +225,7 @@ public class FieldManager {
 	 * @param count
 	 * @param density probability for each cell to be filled
 	 */
-	public static void fillBottomLinesRandomly(Field field, int count,
+	public static final void fillBottomLinesRandomly(Field field, int count,
 			double density) {
 		int[][] grid = field.getGrid();
 		int w = grid.length;
@@ -245,7 +245,7 @@ public class FieldManager {
 	 * 
 	 * @param dx
 	 */
-	public static void moveField(Field field, int dx) {
+	public static final void moveField(Field field, int dx) {
 		// XXX generalize!
 		dx = 1;
 		int[][] grid = field.getGrid();
@@ -263,7 +263,7 @@ public class FieldManager {
 	 * @param field
 	 * @return
 	 */
-	public static double computeDensity(Field field) {
+	public static final double computeDensity(Field field) {
 		int[][] grid = field.getGrid();
 		int w = grid.length;
 		int h = grid[0].length;

@@ -54,7 +54,7 @@ public class GameManager {
 		gameTimer = new Timer(10000, new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if (!currentGame.performStep()) {
+				if (!currentGame.performStepDown()) {
 					currentGame.finishFigure();
 					if(params.isIncreaseSpeed()) {
 						currentGame.checkForNewSpeed();
@@ -65,13 +65,19 @@ public class GameManager {
 					if(params.isFieldMoving()) {
 						currentGame.moveField(1);
 					}
-					if(params.isFadeWhenFigureFinished()) {
-						drawer.tickTime(currentGame.getField());
-					}
+//					if(params.isFadeWhenFigureFinished()) {
+//						drawer.tickTime(currentGame.getField());
+//					}
 					if (!currentGame.prepareNewFigure(/*figures.get(i++)*/)) {
 						finishGame();
+					} else {
+						drawer.setFigureProjectionDistance(currentGame
+								.getFigureProjectionDistance());
 					}
-					drawer.figureToDraw(currentGame.getFigure());
+					drawer.setFigureToDraw(currentGame.getFigure());
+				} else {
+					drawer.setFigureProjectionDistance(currentGame
+							.getFigureProjectionDistance());
 				}
 				repaint();
 			}
@@ -103,6 +109,7 @@ public class GameManager {
 	 */
 	public void setUpDrawer(DrawerPanel drawer) {
 		this.drawer = drawer;
+		drawer.setFigureProjectionDistance(-1);
 	}
 
 	public void setupLabels(JLabel speedLabel, JLabel linesLabel,
@@ -132,8 +139,10 @@ public class GameManager {
 		if (!currentGame.prepareNewFigure(/* figures.get(i++) */)) {
 			System.err.println("error at start");
 		}
-		drawer.fieldToDraw(currentGame.getField());
-		drawer.figureToDraw(currentGame.getFigure());
+		drawer.setFieldToDraw(currentGame.getField());
+		drawer.setFigureToDraw(currentGame.getFigure());
+		drawer.setFigureProjectionDistance(currentGame
+				.getFigureProjectionDistance());
 		repaint();
 		Controller.unlock();
 		gameTimer.start();
@@ -196,7 +205,10 @@ public class GameManager {
 		if(action == Action.VERTICAL_REFLECT && !params.isReflectionsAllowed()) {
 			return;
 		}
-		/* boolean success = */currentGame.performAction(action);
+		boolean success = currentGame.tryPerformAction(action);
+		if(success && params.isProjectionEnabled()) {
+			drawer.setFigureProjectionDistance(currentGame.getFigureProjectionDistance());
+		}
 		repaint();
 	}
 }

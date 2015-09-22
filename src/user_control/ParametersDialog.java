@@ -18,8 +18,6 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Window;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -45,6 +43,7 @@ public class ParametersDialog extends JDialog {
 	private JRadioButton rdbtnSemiwhole2;
 	private JRadioButton rdbtnSemiwhole3;
 	private JRadioButton rdbtnWhole[] = new JRadioButton[FigureType.WHOLE_MAX_BRICKS];
+	private JRadioButton rdbtn2Whole[][] = new JRadioButton[FigureType.SEPARATE_MAX_BRICKS][];
 	private JRadioButton rdbtnPenWhole[] = new JRadioButton[FigureType.WHOLE_MAX_BRICKS];
 //	private JRadioButton rdbtnMoreBricks;
 //	private JRadioButton rdbtnPenetrating;
@@ -65,6 +64,8 @@ public class ParametersDialog extends JDialog {
 	private JRadioButton rdbtnUniformByType;
 	private JRadioButton rdbtnPenSemiwhole2;
 	private JRadioButton rdbtnPenSemiwhole3;
+	private JSeparator separator_1;
+	private JLabel lblTwobodiesfigureTypes;
 
 	public ParametersDialog(Window owner, GameManager manager, GameParameters gameParameters)
 	{
@@ -88,6 +89,11 @@ public class ParametersDialog extends JDialog {
 			rdbtnWhole[i].setSelected(types.contains(FigureType.valueOf("WHOLE_"+(i+1))));
 			rdbtnPenWhole[i].setSelected(types.contains(FigureType.valueOf("PENETRATING_WHOLE_"+(i+1))));
 		}
+		for(int i=1; i<FigureType.SEPARATE_MAX_BRICKS; ++i)
+			for(int j=1; j<FigureType.SEPARATE_MAX_BRICKS; ++j)
+			{
+				rdbtn2Whole[i][j].setSelected(types.contains(FigureType.valueOf("SEPARATE_"+(i+1)+"_"+(j+1))));
+			}
 //		rdbtnMoreBricks.setSelected(types.contains(FigureType.WHOLE_MORE));
 		rdbtnSemiwhole2.setSelected(types.contains(FigureType.SEMIWHOLE_2));
 		rdbtnSemiwhole3.setSelected(types.contains(FigureType.SEMIWHOLE_3));
@@ -118,26 +124,46 @@ public class ParametersDialog extends JDialog {
 	 */
 	public void openDialog() {
 		setTitle("Settings");
-		setBounds(100, 100, 650, 440);
+		setBounds(100, 100, 680, 640);
 		setResizable(false);
 		getContentPane().setLayout(new BorderLayout());
 		contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 		getContentPane().add(contentPanel, BorderLayout.CENTER);
 		GridBagLayout gbl_contentPanel = new GridBagLayout();
-		gbl_contentPanel.columnWidths = new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-		gbl_contentPanel.rowHeights = new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-		gbl_contentPanel.columnWeights = new double[] { 1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0, Double.MIN_VALUE };
-		gbl_contentPanel.rowWeights = new double[] { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE };
+		gbl_contentPanel.columnWidths = new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+		gbl_contentPanel.rowHeights = new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+		gbl_contentPanel.columnWeights = new double[] { 1.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0, Double.MIN_VALUE };
+		gbl_contentPanel.rowWeights = new double[] { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE };
 		contentPanel.setLayout(gbl_contentPanel);
 		{
 			JLabel lblIncludeTypes = new JLabel("OneBodyFigure types:");
 			lblIncludeTypes.setFont(new Font("Tahoma", Font.PLAIN, 14));
 			GridBagConstraints gbc_lblIncludeTypes = new GridBagConstraints();
-			gbc_lblIncludeTypes.gridwidth = 4;
+			gbc_lblIncludeTypes.gridwidth = 2;
 			gbc_lblIncludeTypes.insets = new Insets(0, 0, 5, 5);
 			gbc_lblIncludeTypes.gridx = 0;
 			gbc_lblIncludeTypes.gridy = 0;
 			contentPanel.add(lblIncludeTypes, gbc_lblIncludeTypes);
+		}
+		{
+			lblTwobodiesfigureTypes = new JLabel("TwoBodiesFigure types:");
+			lblTwobodiesfigureTypes.setFont(new Font("Tahoma", Font.PLAIN, 14));
+			GridBagConstraints gbc_lblTwobodiesfigureTypes = new GridBagConstraints();
+			gbc_lblTwobodiesfigureTypes.gridwidth = 2;
+			gbc_lblTwobodiesfigureTypes.insets = new Insets(0, 0, 5, 5);
+			gbc_lblTwobodiesfigureTypes.gridx = 3;
+			gbc_lblTwobodiesfigureTypes.gridy = 0;
+			contentPanel.add(lblTwobodiesfigureTypes, gbc_lblTwobodiesfigureTypes);
+		}
+		// one body whole bricks and their penetraintings
+		{
+			JLabel lblWhole = new JLabel("Whole & penetrating:");
+			GridBagConstraints gbc_lblWhole = new GridBagConstraints();
+			gbc_lblWhole.gridwidth = 2;
+			gbc_lblWhole.insets = new Insets(0, 0, 5, 5);
+			gbc_lblWhole.gridx = 0;
+			gbc_lblWhole.gridy = 1;
+			contentPanel.add(lblWhole, gbc_lblWhole);
 		}
 		for(int i=0; i<FigureType.WHOLE_MAX_BRICKS; ++i)
 		{
@@ -158,23 +184,95 @@ public class ParametersDialog extends JDialog {
 			contentPanel.add(rdbtnPenWhole[i], gbc_rdbtnPenWhole);
 			
 		}
-//		{
-//			rdbtnPenWhole1 = new JRadioButton("");
-//			GridBagConstraints gbc_rdbtnPenWhole1 = new GridBagConstraints();
-//			gbc_rdbtnPenWhole1.anchor = GridBagConstraints.WEST;
-//			gbc_rdbtnPenWhole1.insets = new Insets(0, 0, 5, 5);
-//			gbc_rdbtnPenWhole1.gridx = 1;
-//			gbc_rdbtnPenWhole1.gridy = 2;
-//			contentPanel.add(rdbtnPenWhole1, gbc_rdbtnPenWhole1);
-//		}
+		// semiwhole and their penetraitings
+		int shift = FigureType.WHOLE_MAX_BRICKS + 2;
+		{
+			separator_1 = new JSeparator();
+			GridBagConstraints gbc_separator_1 = new GridBagConstraints();
+			gbc_separator_1.gridheight = 15;
+			gbc_separator_1.insets = new Insets(0, 0, 5, 5);
+			gbc_separator_1.gridx = 2;
+			gbc_separator_1.gridy = 0;
+			contentPanel.add(separator_1, gbc_separator_1);
+		}
+		{
+			JLabel lblSemiwhole = new JLabel("Semiwhole & penetrating:");
+			GridBagConstraints gbc_lblSemiwhole = new GridBagConstraints();
+			gbc_lblSemiwhole.gridwidth = 2;
+			gbc_lblSemiwhole.insets = new Insets(0, 0, 5, 5);
+			gbc_lblSemiwhole.gridx = 0;
+			gbc_lblSemiwhole.gridy = shift;
+			contentPanel.add(lblSemiwhole, gbc_lblSemiwhole);
+		}
+		{
+			rdbtnSemiwhole2 = new JRadioButton("2 bricks");
+			GridBagConstraints gbc_rdbtnNewRadioButton = new GridBagConstraints();
+			gbc_rdbtnNewRadioButton.anchor = GridBagConstraints.EAST;
+			gbc_rdbtnNewRadioButton.insets = new Insets(0, 0, 5, 5);
+			gbc_rdbtnNewRadioButton.gridx = 0;
+			gbc_rdbtnNewRadioButton.gridy = shift+1;
+			contentPanel.add(rdbtnSemiwhole2, gbc_rdbtnNewRadioButton);
+		}
+		{
+			rdbtnSemiwhole3 = new JRadioButton("3 bricks");
+			GridBagConstraints gbc_rdbtnBricks = new GridBagConstraints();
+			gbc_rdbtnBricks.anchor = GridBagConstraints.EAST;
+			gbc_rdbtnBricks.insets = new Insets(0, 0, 5, 5);
+			gbc_rdbtnBricks.gridx = 0;
+			gbc_rdbtnBricks.gridy = shift+2;
+			contentPanel.add(rdbtnSemiwhole3, gbc_rdbtnBricks);
+		}
+		{
+			rdbtnPenSemiwhole2 = new JRadioButton("");
+			GridBagConstraints gbc_rdbtnPenSemiwhole2 = new GridBagConstraints();
+			gbc_rdbtnPenSemiwhole2.anchor = GridBagConstraints.WEST;
+			gbc_rdbtnPenSemiwhole2.insets = new Insets(0, 0, 5, 5);
+			gbc_rdbtnPenSemiwhole2.gridx = 1;
+			gbc_rdbtnPenSemiwhole2.gridy = shift+1;
+			contentPanel.add(rdbtnPenSemiwhole2, gbc_rdbtnPenSemiwhole2);
+		}
+		{
+			rdbtnPenSemiwhole3 = new JRadioButton("");
+			GridBagConstraints gbc_rdbtnPenSemiwhole3 = new GridBagConstraints();
+			gbc_rdbtnPenSemiwhole3.anchor = GridBagConstraints.WEST;
+			gbc_rdbtnPenSemiwhole3.insets = new Insets(0, 0, 5, 5);
+			gbc_rdbtnPenSemiwhole3.gridx = 1;
+			gbc_rdbtnPenSemiwhole3.gridy = shift+2;
+			contentPanel.add(rdbtnPenSemiwhole3, gbc_rdbtnPenSemiwhole3);
+		}
+		// two bodies whole
+		{
+			JLabel lblWhole = new JLabel("Separate:");
+			GridBagConstraints gbc_lblWhole = new GridBagConstraints();
+			gbc_lblWhole.gridwidth = 3;
+			gbc_lblWhole.insets = new Insets(0, 0, 5, 5);
+			gbc_lblWhole.gridx = 3;
+			gbc_lblWhole.gridy = 1;
+			contentPanel.add(lblWhole, gbc_lblWhole);
+		}
+		for(int h=2, i=1; i<FigureType.SEPARATE_MAX_BRICKS; ++i)
+		{
+			rdbtn2Whole[i] = new JRadioButton[FigureType.SEPARATE_MAX_BRICKS];
+			for(int j=1; j<FigureType.SEPARATE_MAX_BRICKS; ++j, ++h)
+			{
+				rdbtn2Whole[i][j] = new JRadioButton((i+1) + "-" + (j+1) + " brick");
+				GridBagConstraints gbc_rdbtnWhole = new GridBagConstraints();
+				gbc_rdbtnWhole.anchor = GridBagConstraints.EAST;
+				gbc_rdbtnWhole.insets = new Insets(0, 0, 5, 5);
+				gbc_rdbtnWhole.gridx = 3;
+				gbc_rdbtnWhole.gridy = h;
+				contentPanel.add(rdbtn2Whole[i][j], gbc_rdbtnWhole);
+			}
+		}
+		
 		{
 			JSeparator separator = new JSeparator();
 			separator.setOrientation(SwingConstants.VERTICAL);
 			GridBagConstraints gbc_separator = new GridBagConstraints();
 			gbc_separator.fill = GridBagConstraints.VERTICAL;
 			gbc_separator.gridheight = 12;
-			gbc_separator.insets = new Insets(0, 0, 0, 5);
-			gbc_separator.gridx = 7;
+			gbc_separator.insets = new Insets(0, 0, 5, 5);
+			gbc_separator.gridx = 8;
 			gbc_separator.gridy = 0;
 			contentPanel.add(separator, gbc_separator);
 		}
@@ -184,7 +282,7 @@ public class ParametersDialog extends JDialog {
 			GridBagConstraints gbc_lblGameProperties = new GridBagConstraints();
 			gbc_lblGameProperties.gridwidth = 2;
 			gbc_lblGameProperties.insets = new Insets(0, 0, 5, 0);
-			gbc_lblGameProperties.gridx = 8;
+			gbc_lblGameProperties.gridx = 9;
 			gbc_lblGameProperties.gridy = 0;
 			contentPanel.add(lblGameProperties, gbc_lblGameProperties);
 		}
@@ -194,72 +292,9 @@ public class ParametersDialog extends JDialog {
 			gbc_chckbxAllowReflections.anchor = GridBagConstraints.WEST;
 			gbc_chckbxAllowReflections.gridwidth = 2;
 			gbc_chckbxAllowReflections.insets = new Insets(0, 0, 5, 0);
-			gbc_chckbxAllowReflections.gridx = 8;
+			gbc_chckbxAllowReflections.gridx = 9;
 			gbc_chckbxAllowReflections.gridy = 1;
 			contentPanel.add(chckbxAllowReflections, gbc_chckbxAllowReflections);
-		}
-//		{
-//			rdbtnPenWhole2 = new JRadioButton("");
-//			GridBagConstraints gbc_rdbtnPenWhole2 = new GridBagConstraints();
-//			gbc_rdbtnPenWhole2.anchor = GridBagConstraints.WEST;
-//			gbc_rdbtnPenWhole2.insets = new Insets(0, 0, 5, 5);
-//			gbc_rdbtnPenWhole2.gridx = 1;
-//			gbc_rdbtnPenWhole2.gridy = 3;
-//			contentPanel.add(rdbtnPenWhole2, gbc_rdbtnPenWhole2);
-//		}
-//		{
-//			rdbtnPenWhole3 = new JRadioButton("");
-//			GridBagConstraints gbc_rdbtnPenWhole3 = new GridBagConstraints();
-//			gbc_rdbtnPenWhole3.anchor = GridBagConstraints.WEST;
-//			gbc_rdbtnPenWhole3.insets = new Insets(0, 0, 5, 5);
-//			gbc_rdbtnPenWhole3.gridx = 1;
-//			gbc_rdbtnPenWhole3.gridy = 4;
-//			contentPanel.add(rdbtnPenWhole3, gbc_rdbtnPenWhole3);
-//		}
-//		{
-//			rdbtnPenWhole4 = new JRadioButton("");
-//			GridBagConstraints gbc_rdbtnPenWhole4 = new GridBagConstraints();
-//			gbc_rdbtnPenWhole4.anchor = GridBagConstraints.WEST;
-//			gbc_rdbtnPenWhole4.insets = new Insets(0, 0, 5, 5);
-//			gbc_rdbtnPenWhole4.gridx = 1;
-//			gbc_rdbtnPenWhole4.gridy = 5;
-//			contentPanel.add(rdbtnPenWhole4, gbc_rdbtnPenWhole4);
-//		}
-		{
-			rdbtnSemiwhole2 = new JRadioButton("2 bricks");
-			GridBagConstraints gbc_rdbtnNewRadioButton = new GridBagConstraints();
-			gbc_rdbtnNewRadioButton.anchor = GridBagConstraints.EAST;
-			gbc_rdbtnNewRadioButton.insets = new Insets(0, 0, 5, 5);
-			gbc_rdbtnNewRadioButton.gridx = 2;
-			gbc_rdbtnNewRadioButton.gridy = 2;
-			contentPanel.add(rdbtnSemiwhole2, gbc_rdbtnNewRadioButton);
-		}
-		{
-			rdbtnSemiwhole3 = new JRadioButton("3 bricks");
-			GridBagConstraints gbc_rdbtnBricks = new GridBagConstraints();
-			gbc_rdbtnBricks.anchor = GridBagConstraints.EAST;
-			gbc_rdbtnBricks.insets = new Insets(0, 0, 5, 5);
-			gbc_rdbtnBricks.gridx = 2;
-			gbc_rdbtnBricks.gridy = 3;
-			contentPanel.add(rdbtnSemiwhole3, gbc_rdbtnBricks);
-		}
-		{
-			rdbtnPenSemiwhole2 = new JRadioButton("");
-			GridBagConstraints gbc_rdbtnPenSemiwhole2 = new GridBagConstraints();
-			gbc_rdbtnPenSemiwhole2.anchor = GridBagConstraints.WEST;
-			gbc_rdbtnPenSemiwhole2.insets = new Insets(0, 0, 5, 5);
-			gbc_rdbtnPenSemiwhole2.gridx = 3;
-			gbc_rdbtnPenSemiwhole2.gridy = 2;
-			contentPanel.add(rdbtnPenSemiwhole2, gbc_rdbtnPenSemiwhole2);
-		}
-		{
-			rdbtnPenSemiwhole3 = new JRadioButton("");
-			GridBagConstraints gbc_rdbtnPenSemiwhole3 = new GridBagConstraints();
-			gbc_rdbtnPenSemiwhole3.anchor = GridBagConstraints.WEST;
-			gbc_rdbtnPenSemiwhole3.insets = new Insets(0, 0, 5, 5);
-			gbc_rdbtnPenSemiwhole3.gridx = 3;
-			gbc_rdbtnPenSemiwhole3.gridy = 3;
-			contentPanel.add(rdbtnPenSemiwhole3, gbc_rdbtnPenSemiwhole3);
 		}
 		{
 			chckbxAllowPause = new JCheckBox("allow pause");
@@ -267,7 +302,7 @@ public class ParametersDialog extends JDialog {
 			gbc_chckbxAllowPause.anchor = GridBagConstraints.WEST;
 			gbc_chckbxAllowPause.gridwidth = 2;
 			gbc_chckbxAllowPause.insets = new Insets(0, 0, 5, 0);
-			gbc_chckbxAllowPause.gridx = 8;
+			gbc_chckbxAllowPause.gridx = 9;
 			gbc_chckbxAllowPause.gridy = 2;
 			contentPanel.add(chckbxAllowPause, gbc_chckbxAllowPause);
 		}
@@ -276,9 +311,9 @@ public class ParametersDialog extends JDialog {
 			separator.setOrientation(SwingConstants.VERTICAL);
 			GridBagConstraints gbc_separator = new GridBagConstraints();
 			gbc_separator.fill = GridBagConstraints.VERTICAL;
-			gbc_separator.gridheight = 12;
-			gbc_separator.insets = new Insets(0, 0, 0, 5);
-			gbc_separator.gridx = 4;
+			gbc_separator.gridheight = 15;
+			gbc_separator.insets = new Insets(0, 0, 5, 5);
+			gbc_separator.gridx = 5;
 			gbc_separator.gridy = 0;
 			contentPanel.add(separator, gbc_separator);
 		}
@@ -288,33 +323,15 @@ public class ParametersDialog extends JDialog {
 			GridBagConstraints gbc_lblFieldProperties = new GridBagConstraints();
 			gbc_lblFieldProperties.gridwidth = 2;
 			gbc_lblFieldProperties.insets = new Insets(0, 0, 5, 5);
-			gbc_lblFieldProperties.gridx = 5;
+			gbc_lblFieldProperties.gridx = 6;
 			gbc_lblFieldProperties.gridy = 0;
 			contentPanel.add(lblFieldProperties, gbc_lblFieldProperties);
-		}
-		{
-			JLabel lblWhole = new JLabel("Whole & penetrating:");
-			GridBagConstraints gbc_lblWhole = new GridBagConstraints();
-			gbc_lblWhole.gridwidth = 2;
-			gbc_lblWhole.insets = new Insets(0, 0, 5, 5);
-			gbc_lblWhole.gridx = 0;
-			gbc_lblWhole.gridy = 1;
-			contentPanel.add(lblWhole, gbc_lblWhole);
-		}
-		{
-			JLabel lblSemiwhole = new JLabel("Semiwhole & penetrating:");
-			GridBagConstraints gbc_lblSemiwhole = new GridBagConstraints();
-			gbc_lblSemiwhole.gridwidth = 2;
-			gbc_lblSemiwhole.insets = new Insets(0, 0, 5, 5);
-			gbc_lblSemiwhole.gridx = 2;
-			gbc_lblSemiwhole.gridy = 1;
-			contentPanel.add(lblSemiwhole, gbc_lblSemiwhole);
 		}
 		{
 			JLabel lblWidth = new JLabel("Width:");
 			GridBagConstraints gbc_lblWidth = new GridBagConstraints();
 			gbc_lblWidth.insets = new Insets(0, 0, 5, 5);
-			gbc_lblWidth.gridx = 5;
+			gbc_lblWidth.gridx = 6;
 			gbc_lblWidth.gridy = 1;
 			contentPanel.add(lblWidth, gbc_lblWidth);
 		}
@@ -332,7 +349,7 @@ public class ParametersDialog extends JDialog {
 			spinnerWidth.setPreferredSize(new Dimension(70, 25));
 			GridBagConstraints gbc_spinner = new GridBagConstraints();
 			gbc_spinner.insets = new Insets(0, 0, 5, 5);
-			gbc_spinner.gridx = 6;
+			gbc_spinner.gridx = 7;
 			gbc_spinner.gridy = 1;
 			contentPanel.add(spinnerWidth, gbc_spinner);
 		}
@@ -340,7 +357,7 @@ public class ParametersDialog extends JDialog {
 			JLabel lblHeight = new JLabel("Height:");
 			GridBagConstraints gbc_lblHeight = new GridBagConstraints();
 			gbc_lblHeight.insets = new Insets(0, 0, 5, 5);
-			gbc_lblHeight.gridx = 5;
+			gbc_lblHeight.gridx = 6;
 			gbc_lblHeight.gridy = 2;
 			contentPanel.add(lblHeight, gbc_lblHeight);
 		}
@@ -358,7 +375,7 @@ public class ParametersDialog extends JDialog {
 			spinnerHeight.setPreferredSize(new Dimension(70, 25));
 			GridBagConstraints gbc_spinner = new GridBagConstraints();
 			gbc_spinner.insets = new Insets(0, 0, 5, 5);
-			gbc_spinner.gridx = 6;
+			gbc_spinner.gridx = 7;
 			gbc_spinner.gridy = 2;
 			contentPanel.add(spinnerHeight, gbc_spinner);
 		}
@@ -368,7 +385,7 @@ public class ParametersDialog extends JDialog {
 			gbc_chckbxFigureSwap.anchor = GridBagConstraints.WEST;
 			gbc_chckbxFigureSwap.gridwidth = 2;
 			gbc_chckbxFigureSwap.insets = new Insets(0, 0, 5, 0);
-			gbc_chckbxFigureSwap.gridx = 8;
+			gbc_chckbxFigureSwap.gridx = 9;
 			gbc_chckbxFigureSwap.gridy = 3;
 			contentPanel.add(chckbxFigureSwap, gbc_chckbxFigureSwap);
 		}
@@ -378,7 +395,7 @@ public class ParametersDialog extends JDialog {
 			gbc_chckbxAllowShiftDown.anchor = GridBagConstraints.WEST;
 			gbc_chckbxAllowShiftDown.gridwidth = 2;
 			gbc_chckbxAllowShiftDown.insets = new Insets(0, 0, 5, 5);
-			gbc_chckbxAllowShiftDown.gridx = 5;
+			gbc_chckbxAllowShiftDown.gridx = 6;
 			gbc_chckbxAllowShiftDown.gridy = 4;
 			contentPanel.add(chckbxAllowShiftDown, gbc_chckbxAllowShiftDown);
 		}
@@ -388,7 +405,7 @@ public class ParametersDialog extends JDialog {
 			gbc_chckbxShowNextFigure.anchor = GridBagConstraints.WEST;
 			gbc_chckbxShowNextFigure.gridwidth = 2;
 			gbc_chckbxShowNextFigure.insets = new Insets(0, 0, 5, 0);
-			gbc_chckbxShowNextFigure.gridx = 8;
+			gbc_chckbxShowNextFigure.gridx = 9;
 			gbc_chckbxShowNextFigure.gridy = 4;
 			contentPanel.add(chckbxShowNextFigure, gbc_chckbxShowNextFigure);
 		}
@@ -398,7 +415,7 @@ public class ParametersDialog extends JDialog {
 			gbc_chckbxDeleteFullLines.anchor = GridBagConstraints.WEST;
 			gbc_chckbxDeleteFullLines.gridwidth = 2;
 			gbc_chckbxDeleteFullLines.insets = new Insets(0, 0, 5, 5);
-			gbc_chckbxDeleteFullLines.gridx = 5;
+			gbc_chckbxDeleteFullLines.gridx = 6;
 			gbc_chckbxDeleteFullLines.gridy = 5;
 			contentPanel.add(chckbxDeleteFullLines, gbc_chckbxDeleteFullLines);
 		}
@@ -408,7 +425,7 @@ public class ParametersDialog extends JDialog {
 			gbc_chckbxIncreaseSpeed.anchor = GridBagConstraints.WEST;
 			gbc_chckbxIncreaseSpeed.gridwidth = 2;
 			gbc_chckbxIncreaseSpeed.insets = new Insets(0, 0, 5, 0);
-			gbc_chckbxIncreaseSpeed.gridx = 8;
+			gbc_chckbxIncreaseSpeed.gridx = 9;
 			gbc_chckbxIncreaseSpeed.gridy = 5;
 			contentPanel.add(chckbxIncreaseSpeed, gbc_chckbxIncreaseSpeed);
 		}
@@ -418,7 +435,7 @@ public class ParametersDialog extends JDialog {
 			gbc_chckbxMovingField.anchor = GridBagConstraints.WEST;
 			gbc_chckbxMovingField.gridwidth = 2;
 			gbc_chckbxMovingField.insets = new Insets(0, 0, 5, 5);
-			gbc_chckbxMovingField.gridx = 5;
+			gbc_chckbxMovingField.gridx = 6;
 			gbc_chckbxMovingField.gridy = 6;
 			contentPanel.add(chckbxMovingField, gbc_chckbxMovingField);
 		}
@@ -427,7 +444,7 @@ public class ParametersDialog extends JDialog {
 			GridBagConstraints gbc_lblFigureChooser = new GridBagConstraints();
 			gbc_lblFigureChooser.gridwidth = 2;
 			gbc_lblFigureChooser.insets = new Insets(0, 0, 5, 0);
-			gbc_lblFigureChooser.gridx = 8;
+			gbc_lblFigureChooser.gridx = 9;
 			gbc_lblFigureChooser.gridy = 7;
 			contentPanel.add(lblFigureChooser, gbc_lblFigureChooser);
 		}
@@ -438,7 +455,7 @@ public class ParametersDialog extends JDialog {
 			gbc_rdbtnUniformByItem.anchor = GridBagConstraints.WEST;
 			gbc_rdbtnUniformByItem.gridwidth = 2;
 			gbc_rdbtnUniformByItem.insets = new Insets(0, 0, 5, 0);
-			gbc_rdbtnUniformByItem.gridx = 8;
+			gbc_rdbtnUniformByItem.gridx = 9;
 			gbc_rdbtnUniformByItem.gridy = 8;
 			contentPanel.add(rdbtnUniformByItem, gbc_rdbtnUniformByItem);
 		}
@@ -449,7 +466,7 @@ public class ParametersDialog extends JDialog {
 			gbc_rdbtnUniformByType.anchor = GridBagConstraints.WEST;
 			gbc_rdbtnUniformByType.gridwidth = 2;
 			gbc_rdbtnUniformByType.insets = new Insets(0, 0, 5, 0);
-			gbc_rdbtnUniformByType.gridx = 8;
+			gbc_rdbtnUniformByType.gridx = 9;
 			gbc_rdbtnUniformByType.gridy = 9;
 			contentPanel.add(rdbtnUniformByType, gbc_rdbtnUniformByType);
 		}
@@ -478,20 +495,12 @@ public class ParametersDialog extends JDialog {
 			{
 				JButton okButton = new JButton("Accept");
 				buttonPane.add(okButton);
-				okButton.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						manager.beginNewGame(accept());
-					}
-				});
+				okButton.addActionListener(e -> manager.beginNewGame(accept()));
 				getRootPane().setDefaultButton(okButton);
 			}
 			{
 				JButton cancelButton = new JButton("Cancel");
-				cancelButton.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						dispose();
-					}
-				});
+				cancelButton.addActionListener(e -> dispose());
 				buttonPane.add(cancelButton);
 			}
 		}
@@ -506,6 +515,13 @@ public class ParametersDialog extends JDialog {
 			if (rdbtnPenWhole[i-1].isSelected())
 				types.add(FigureType.valueOf("PENETRATING_WHOLE_"+i));
 		}
+		
+		for(int i=1; i<FigureType.SEPARATE_MAX_BRICKS; ++i)
+			for(int j=1; j<FigureType.SEPARATE_MAX_BRICKS; ++j)
+			{
+				if (rdbtn2Whole[i][j].isSelected())
+					types.add(FigureType.valueOf("SEPARATE_"+(i+1)+"_"+(j+1)));
+			}
 		
 		if (rdbtnSemiwhole2.isSelected())
 			types.add(FigureType.SEMIWHOLE_2);

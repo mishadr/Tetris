@@ -11,13 +11,12 @@ import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
+import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -27,8 +26,6 @@ import javax.swing.JMenuItem;
 import javax.swing.JRadioButton;
 import javax.swing.JSeparator;
 import javax.swing.border.EmptyBorder;
-import javax.swing.ButtonGroup;
-
 
 
 public class MainDialog extends JFrame {
@@ -85,7 +82,7 @@ public class MainDialog extends JFrame {
 		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0};
 		getContentPane().setLayout(gridBagLayout);
 		
-		level = Level.DEFAULT;
+		level = Level.HARD_7;
 		gameStyle = GameStyle.CLASSIC;
 		setTitle(title + level + " " + gameStyle);
 
@@ -109,12 +106,7 @@ public class MainDialog extends JFrame {
 			gbc_pauseButton.gridx = 1;
 			gbc_pauseButton.gridy = 0;
 			getContentPane().add(pauseButton, gbc_pauseButton);
-			pauseButton.addActionListener(new ActionListener() {
-				
-				public void actionPerformed(ActionEvent e) {
-					manager.pauseGame();
-				}
-			});
+			pauseButton.addActionListener(e -> manager.pauseGame());
 			pauseButton.setFocusable(false);
 		}
 		{
@@ -189,29 +181,17 @@ public class MainDialog extends JFrame {
 				menuBar.add(mnGame);
 				{
 					JMenuItem mntmBeginNew = new JMenuItem("Restart");
-					mntmBeginNew.addActionListener(new ActionListener() {
-						public void actionPerformed(ActionEvent e) {
-							manager.restart();
-						}
-					});
+					mntmBeginNew.addActionListener(e -> manager.restart());
 					mnGame.add(mntmBeginNew);
 				}
 				{
 					JMenuItem mntmPause = new JMenuItem("Pause");
-					mntmPause.addActionListener(new ActionListener() {
-						public void actionPerformed(ActionEvent e) {
-							manager.pauseGame();
-						}
-					});
+					mntmPause.addActionListener(e -> manager.pauseGame());
 					mnGame.add(mntmPause);
 				}
 				{
 					JMenuItem mntmFinish = new JMenuItem("Finish");
-					mntmFinish.addActionListener(new ActionListener() {
-						public void actionPerformed(ActionEvent e) {
-							manager.finishGame();
-						}
-					});
+					mntmFinish.addActionListener(e -> manager.finishGame());
 					mnGame.add(mntmFinish);
 				}
 				{
@@ -220,11 +200,9 @@ public class MainDialog extends JFrame {
 				}
 				{
 					JMenuItem mntmExit = new JMenuItem("Exit");
-					mntmExit.addActionListener(new ActionListener() {
-						public void actionPerformed(ActionEvent e) {
-							manager.finishGame();
-							System.exit(0);
-						}
+					mntmExit.addActionListener(e -> {
+						manager.finishGame();
+						System.exit(0);
 					});
 					mnGame.add(mntmExit);
 				}
@@ -239,11 +217,7 @@ public class MainDialog extends JFrame {
 					if(item.equals(level)) {
 						levelButtonGroup.setSelected(rButton.getModel(), true);
 					}
-					rButton.addActionListener(new ActionListener() {
-						public void actionPerformed(ActionEvent e) {
-							level = item;
-						}
-					});
+					rButton.addActionListener(e -> level = item);
 					mnParameters.add(rButton);
 				}
 			}
@@ -258,11 +232,7 @@ public class MainDialog extends JFrame {
 					if(item.equals(gameStyle)) {
 						gameStyleButtonGroup.setSelected(rButton.getModel(), true);
 					}
-					rButton.addActionListener(new ActionListener() {
-						public void actionPerformed(ActionEvent e) {
-							gameStyle = item;
-						}
-					});
+					rButton.addActionListener(e -> gameStyle = item);
 					mnGameStyle.add(rButton);
 				}
 			}
@@ -271,20 +241,12 @@ public class MainDialog extends JFrame {
 				menuBar.add(mnNewGame);
 				{
 					JMenuItem mntmChosenLevel = new JMenuItem("Chosen level & style");
-					mntmChosenLevel.addActionListener(new ActionListener() {
-						public void actionPerformed(ActionEvent e) {
-							startNewGame();
-						}
-					});
+					mntmChosenLevel.addActionListener(e -> startNewGame());
 					mnNewGame.add(mntmChosenLevel);
 				}
 				{
 					JMenuItem mntmFullyCustomGame = new JMenuItem("Fully custom game...");
-					mntmFullyCustomGame.addActionListener(new ActionListener() {
-						public void actionPerformed(ActionEvent e) {
-							changeParameters();
-						}
-					});
+					mntmFullyCustomGame.addActionListener(e -> changeParameters());
 					mnNewGame.add(mntmFullyCustomGame);
 				}
 			}
