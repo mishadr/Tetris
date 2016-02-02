@@ -7,7 +7,7 @@ import java.util.Arrays;
 import auto_solver.Model;
 
 /**
- * Fast implementation of binary {@link AbstractField} for speed calculations.
+ * Fast implementation of binary {@link AbstractField} for fast calculations.
  * 
  * @author misha
  * 
@@ -70,6 +70,21 @@ public class FastField extends AbstractField {
 			count++;
 		}
 		return count;
+	}
+
+	/**
+	 * Fills the bottom part of the field (starting from the specified depth)
+	 * with specified density.
+	 * 
+	 * @param startHeight
+	 * @param density
+	 */
+	public void fillRandomly(int startHeight, double density) {
+		for (int i = 0; i < width; ++i) {
+			for (int j = startHeight; j < height; ++j) {
+				grid[i * height + j] = Math.random() < density;
+			}
+		}
 	}
 
 }

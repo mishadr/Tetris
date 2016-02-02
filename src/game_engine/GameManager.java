@@ -143,6 +143,7 @@ public class GameManager {
 		drawer.setFigureToDraw(currentGame.getFigure());
 		drawer.setFigureProjectionDistance(currentGame
 				.getFigureProjectionDistance());
+		drawer.setPaused(false);
 		repaint();
 		Controller.unlock();
 		gameTimer.start();
@@ -187,12 +188,14 @@ public class GameManager {
 //			if(!params.isAllTimeFading()) {
 //				drawerTimer.stop();
 //			}
+			drawer.setPaused(true);
 		}
 		else {
 			gameTimer.start();
 //			if(!params.isAllTimeFading()) {
 //				drawerTimer.start();
 //			}
+			drawer.setPaused(false);
 		}
 	}
 

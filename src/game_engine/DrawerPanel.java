@@ -4,28 +4,30 @@ import game_engine.figures.AbstractFigure;
 import game_engine.figures.TwoBodiesFigure;
 
 import java.awt.Color;
-import java.awt.Component;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 
+import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 public class DrawerPanel extends JPanel {
 
 	private static final long serialVersionUID = 2747906925617859260L;
-	private final Component parent;
+	private final JFrame parent;
 //	private Game game;
 	private AbstractField field;
 //	private int[][] fieldGrid;
 	private AbstractFigure figure;
 	private int figureProjectionDistance;
 	private int fadingIterations = 8;
+	private boolean isPaused;
 
 	public static int MAX_WIDTH = 1200;
 	public static int MAX_HEIGHT = 680;
 	private int size = 25;
 
-	public DrawerPanel(Component parent) {
+	public DrawerPanel(JFrame parent) {
 		this.parent = parent;
 //		fieldGrid = null;
 		field = null;
@@ -40,10 +42,9 @@ public class DrawerPanel extends JPanel {
 		int w = newField.getWidth();
 		int h = newField.getHeight();
 		size = Math.min(Math.min(MAX_WIDTH/w, 25), Math.min(MAX_HEIGHT/h, 25));
-//		if(((Frame)parent).isResizable())
-//			parent.setSize(size * grid.length + 112, size * grid[0].length + 64); // if resizable
-//		else
-			parent.setSize(size * w + 102, size * h + 51);
+		int xShift = parent.getWidth() - getWidth() + 2;
+		int yShift = parent.getHeight() - getHeight() + 2;
+		parent.setSize(size * w + xShift, size * h + yShift);
 	}
 	
 //	/**
@@ -91,7 +92,12 @@ public class DrawerPanel extends JPanel {
 		if(figure != null) {
 			drawFigure(g, figure);
 		}
-		
+		if(isPaused) {
+			g.setColor(Color.gray);
+			int fontSize = (int) (field.width*size/3.4);
+			g.setFont(new Font("TimesRoman", Font.PLAIN, fontSize)); 
+			g.drawString("PAUSE", 0, fontSize);
+		}
 	}
 
 	// XXX bad idea with null game?
@@ -194,5 +200,9 @@ public class DrawerPanel extends JPanel {
 
 	public void setFadingIterations(int fadingIterations) {
 		this.fadingIterations = fadingIterations;
+	}
+
+	public void setPaused(boolean paused) {
+		isPaused = paused;
 	}
 }

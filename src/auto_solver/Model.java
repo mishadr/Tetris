@@ -546,7 +546,7 @@ public class Model implements Organism {
 		int size = params.length;
 //		int index = 1+(int) (size * Math.random());
 //		params[index] *= (Math.random() * 1 + 0.6);
-		for (int i = 1; i < size; ++i) {// first param fixed
+		for (int i = 0; i < size; ++i) {// first param fixed
 			params[i] *= (Math.random() * 1 + 0.6);
 		}
 		return new Model(params);
@@ -567,7 +567,7 @@ public class Model implements Organism {
 	@Override
 	public void mutate() {
 		double[] params = getParameters();
-		for (int i = 1; i < size; ++i) {// first param fixed
+		for (int i = 0; i < size; ++i) {// first param fixed
 			params[i] *= (Math.random() * 1 + 0.6);
 		}
 		setParameters(params);
